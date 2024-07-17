@@ -14,8 +14,8 @@ buildscript {
   ext {
     //version=YYYYMMVVRR (Either "VV" for stable version OR "RR" for pre-release candidate (e.g. 0001 for rc1))
     //noinspection HighAppVersionCode
-    versionCode=2023040100
-    versionName="2023.4"
+    versionCode=2023040200
+    versionName="2024.1-rc2"
   }
 
   ext.deps = [
@@ -35,7 +35,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:8.0.2'
+    classpath 'com.android.tools.build:gradle:8.1.0'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     classpath rootProject.ext.deps["kotlin-gradle-plugin"]
 
