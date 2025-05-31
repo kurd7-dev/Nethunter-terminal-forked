@@ -545,12 +545,13 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   
   @SuppressLint("SdCardPath")
   private fun addNewAndroidSession(sessionName: String?) {
+    val sysarch = System.getProperty("os.arch")
     val sessionCallback = TermSessionCallback()
     val viewClient = TermViewClient(this)
 
     val parameter = ShellParameter()
       .callback(sessionCallback)
-      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin/bash")
+      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/bash")
       .systemShell(true)
 
     val session = termService!!.createTermSession(parameter)
@@ -565,12 +566,13 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   }
 
   private fun addNewNetHunterSession(sessionName: String?) {
+    val sysarch = System.getProperty("os.arch")
     val sessionCallback = TermSessionCallback()
     val viewClient = TermViewClient(this)
 
     val parameter = ShellParameter()
       .callback(sessionCallback)
-      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin/kali")
+      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/kali")
     val session = termService!!.createTermSession(parameter)
 
     session.mSessionName = sessionName ?: generateSessionName("Kali Shell")
@@ -584,12 +586,13 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
 
   @SuppressLint("SdCardPath")
   private fun addNewRootSession(sessionName: String?) {
+    val sysarch = System.getProperty("os.arch")
     val sessionCallback = TermSessionCallback()
     val viewClient = TermViewClient(this)
 
     val parameter = ShellParameter()
       .callback(sessionCallback)
-      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin/android-su")
+      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/android-su")
       .systemShell(true)
 
     val session = termService!!.createTermSession(parameter)

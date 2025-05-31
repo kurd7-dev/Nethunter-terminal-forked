@@ -11,7 +11,7 @@ android {
     versionCode rootProject.ext.versionCode
     versionName rootProject.ext.versionName
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    resConfigs 'zh-rCN', 'zh-rTW'
+    resourceConfigurations += ['zh-rCN', 'zh-rTW']
     externalNativeBuild {
       cmake {
         cppFlags "-std=c++11"
@@ -43,16 +43,23 @@ android {
     }
   }
   compileOptions {
-    targetCompatibility 1.8
-    sourceCompatibility 1.8
+    targetCompatibility 17
+    sourceCompatibility 17
   }
   kotlinOptions {
     freeCompilerArgs = ["-Xallow-result-return-type"]
+    jvmTarget = "17"
   }
   lint {
     abortOnError false
     checkReleaseBuilds false
   }
+  packaging {
+    jniLibs {
+      useLegacyPackaging true
+    }
+  }
+
   namespace 'com.offsec.nhterm'
 }
 
@@ -82,7 +89,6 @@ dependencies {
 
   // Backports for lower api levels
   implementation 'com.llamalab.safs:safs-core:0.2.0'
-  implementation 'me.zhanghai.android.retrofile:library:1.2.0'
 
   implementation project(':chrome-tabs')
   implementation project(':NeoLang')

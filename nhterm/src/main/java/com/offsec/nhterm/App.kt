@@ -24,7 +24,7 @@ class App : Application() {
     super.onCreate()
     app = this
 
-    Shell.cmd("setenforce 0").exec()
+    //Shell.cmd("setenforce 0").exec()
 
     NeoPreference.init(this)
     CrashHandler.init()
