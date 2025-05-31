@@ -29,11 +29,11 @@ final class TerminalRenderer {
    */
   final float mFontWidth;
   /**
-   * The {@link Paint#getFontSpacing()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png
+   * The {@link Paint#getFontSpacing()}. See https://www.fampennings.nl/maarten/android/08numgrid/font.png
    */
   final int mFontLineSpacing;
   /**
-   * The {@link Paint#ascent()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png
+   * The {@link Paint#ascent()}. See https://www.fampennings.nl/maarten/android/08numgrid/font.png
    */
   private final int mFontAscent;
   /**
@@ -44,8 +44,8 @@ final class TerminalRenderer {
   /**
    * AutoCompletion PopupWindow need them to show popup window
    */
-  protected float savedLastDrawnLineX;
-  protected float savedLastDrawnLineY;
+  private float savedLastDrawnLineX;
+  private float savedLastDrawnLineY;
 
   private final float[] asciiMeasures = new float[127];
 
@@ -72,8 +72,8 @@ final class TerminalRenderer {
   /**
    * Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection.
    */
-  public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
-                           int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
+  public void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
+                     int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
     final boolean reverseVideo = mEmulator.isReverseVideo();
     final int endRow = topRow + mEmulator.mRows;
     final int columns = mEmulator.mColumns;
@@ -215,8 +215,8 @@ final class TerminalRenderer {
     if (cursor != 0) {
       mTextPaint.setColor(cursor);
       float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-      if (cursorStyle == TerminalEmulator.CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
-      else if (cursorStyle == TerminalEmulator.CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
+      if (cursorStyle == TerminalEmulator.CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.F;
+      else if (cursorStyle == TerminalEmulator.CURSOR_STYLE_BAR) right -= (float) (((right - left) * 3) / 4.);
       canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
       savedLastDrawnLineX = left;
       savedLastDrawnLineY = y;

@@ -15,9 +15,9 @@ class UserScript(val scriptFile: File)
 
 class UserScriptComponent : NeoComponent {
   var userScripts = listOf<UserScript>()
-  var binFiles = listOf<UserScript>()
-  val scriptDir = File(NeoTermPath.USER_SCRIPT_PATH)
-  val binDir = File(NeoTermPath.BIN_PATH)
+  private var binFiles = listOf<UserScript>()
+  private val scriptDir = File(NeoTermPath.USER_SCRIPT_PATH)
+  private val binDir = File(NeoTermPath.BIN_PATH)
 
   override fun onServiceInit() = checkForFiles()
 
@@ -26,7 +26,7 @@ class UserScriptComponent : NeoComponent {
 
   override fun onServiceObtained() = checkForFiles()
 
-  fun extractDefaultScript(context: Context) = kotlin.runCatching {
+  private fun extractDefaultScript(context: Context) = kotlin.runCatching {
     Shell.cmd("mkdir -p /data/data/com.offsec.nhterm/files/usr/").exec()
     Shell.cmd("rm -rf /data/data/com.offsec.nhterm/files/usr/bin/*")
 

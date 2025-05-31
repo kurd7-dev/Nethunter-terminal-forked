@@ -36,9 +36,9 @@ class ColorSchemeActivity : BaseCustomizeActivity() {
     }
     .build()
 
-  var changed = false
+  private var changed = false
   private lateinit var editingColorScheme: NeoColorScheme
-  lateinit var adapter: ColorItemAdapter
+  private lateinit var adapter: ColorItemAdapter
 
   private val colorSchemeComponent = ComponentManager.getComponent<ColorSchemeComponent>()
 
@@ -69,11 +69,11 @@ class ColorSchemeActivity : BaseCustomizeActivity() {
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home -> finish()
       R.id.action_done -> applyColorScheme(editingColorScheme)
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 
   override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -104,7 +104,7 @@ class ColorSchemeActivity : BaseCustomizeActivity() {
     }
     edit.addTextChangedListener(object : TextWatcher {
       override fun afterTextChanged(editable: Editable?) {
-        if (editable != null && editable.isNotEmpty()) {
+        if (!editable.isNullOrEmpty()) {
           val color = TerminalColors.parse(editable.toString())
           if (color != 0) {
             edit.setTextColor(color)

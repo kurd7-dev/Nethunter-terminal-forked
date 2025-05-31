@@ -24,13 +24,12 @@ import com.offsec.nhterm.R
  */
 
 class BonusActivity : AppCompatActivity() {
+  private lateinit var mLayout: FrameLayout
+  private var mTapCount: Int = 0
+  private var mKeyCount: Int = 0
+  private var mInterpolator = PathInterpolator(0f, 0f, 0.5f, 1f)
 
-  lateinit internal var mLayout: FrameLayout
-  internal var mTapCount: Int = 0
-  internal var mKeyCount: Int = 0
-  internal var mInterpolator = PathInterpolator(0f, 0f, 0.5f, 1f)
-
-  internal fun makeRipple(): Drawable {
+  private fun makeRipple(): Drawable {
     val idx = newColorIndex()
     val lollipopBackground = ShapeDrawable(OvalShape())
     lollipopBackground.paint.color = FLAVORS[idx]
@@ -53,7 +52,7 @@ class BonusActivity : AppCompatActivity() {
   override fun onAttachedToWindow() {
     val dm = resources.displayMetrics
     val dp = dm.density
-    val size = (Math.min(Math.min(dm.widthPixels, dm.heightPixels).toFloat(), 600 * dp) - 100 * dp).toInt()
+    val size = (dm.widthPixels.coerceAtMost(dm.heightPixels).toFloat().coerceAtMost(600 * dp) - 100 * dp).toInt()
     val stick = object : View(this) {
       internal var mPaint = Paint()
       internal var mShadow = Path()
@@ -69,8 +68,8 @@ class BonusActivity : AppCompatActivity() {
       }
 
       public override fun onDraw(c: Canvas) {
-        val w = c.width
-        val h = c.height / 2
+        val w = width
+        val h = height / 2
         c.translate(0f, h.toFloat())
         val g = GradientDrawable()
         g.orientation = GradientDrawable.Orientation.LEFT_RIGHT

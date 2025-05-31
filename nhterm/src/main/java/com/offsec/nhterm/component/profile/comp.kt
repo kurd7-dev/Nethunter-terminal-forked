@@ -38,18 +38,18 @@ class ProfileComponent : ConfigFileBasedComponent<NeoProfile>(NeoTermPath.PROFIL
     profileList.clear()
     File(baseDir)
       .listFiles(NEOLANG_FILTER)
-      .mapNotNull {
-        this.loadConfigure(it)
-      }
-      .forEach {
-        val list = profileList[it.profileMetaName]
-        if (list != null) {
-          list.add(it)
-        } else {
-          val newList = mutableListOf(it)
-          profileList.put(it.profileMetaName, newList)
+        ?.mapNotNull {
+          this.loadConfigure(it)
         }
-      }
+        ?.forEach {
+          val list = profileList[it.profileMetaName]
+          if (list != null) {
+            list.add(it)
+          } else {
+            val newList = mutableListOf(it)
+            profileList[it.profileMetaName] = newList
+          }
+        }
   }
 
   fun registerProfile(metaName: String, prototype: Class<out NeoProfile>) {

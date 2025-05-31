@@ -5,16 +5,11 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.util.Log
+import android.os.*
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -40,13 +35,10 @@ import com.offsec.nhterm.ui.settings.SettingActivity
 import com.offsec.nhterm.utils.FullScreenHelper
 import com.offsec.nhterm.utils.NeoPermission
 import com.offsec.nhterm.utils.RangedInt
-import com.topjohnwu.superuser.Shell
 import de.mrapp.android.tabswitcher.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.lang.System.`in`
-import java.lang.System.out
 
 
 class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -169,7 +161,7 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item?.itemId) {
+    return when (item.itemId) {
       R.id.menu_item_settings -> {
         startActivity(Intent(this, SettingActivity::class.java))
         true
@@ -194,7 +186,7 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
         startActivity(Intent(this, PackageManagerActivity::class.java))
         true
       }
-      else -> item?.let { super.onOptionsItemSelected(it) }
+      else -> item.let { super.onOptionsItemSelected(it) }
     }
   }
 
@@ -255,10 +247,7 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   override fun onStart() {
     super.onStart()
     EventBus.getDefault().register(this)
-    val tab = tabSwitcher.selectedTab as NeoTab?
-    if (tab != null) {
-      tab.onStart()
-    }
+    (tabSwitcher.selectedTab as NeoTab?)?.onStart()
   }
 
   override fun onStop() {
@@ -324,10 +313,9 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
             .setMessage(R.string.permission_denied)
             .setPositiveButton(
               android.R.string.ok,
-              { _: DialogInterface, _: Int ->
-                finish()
-              },
-            )
+            ) { _: DialogInterface, _: Int ->
+              finish()
+            }
             .show()
         }
         return
@@ -385,9 +373,6 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
-    if (newConfig == null) {
-      return
-    }
 
     // When rotate the screen, extra keys may get updated.
     forEachTab<NeoTab> {
@@ -410,7 +395,7 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   private fun enterMain() {
     setSystemShellMode(false)
 
-    if (!termService!!.sessions.isEmpty()) {
+    if (termService!!.sessions.isNotEmpty()) {
       val lastSession = getStoredCurrentSessionOrLast()
 
       for (session in termService!!.sessions) {
@@ -489,11 +474,10 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
       .setTitle(R.string.new_session_with_profile)
       .setItems(
         profiles.map { it.profileName }.toTypedArray(),
-        { dialog, which ->
-          val selectedProfile = profilesShell[which]
-          addNewSessionWithProfile(selectedProfile)
-        },
-      )
+      ) { _, which ->
+        val selectedProfile = profilesShell[which]
+        addNewSessionWithProfile(selectedProfile)
+      }
       .setPositiveButton(android.R.string.no, null)
       .show()
   }
@@ -628,10 +612,10 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
     // Do not add the same session again
     // Or app will crash when rotate
     val tabCount = tabSwitcher.count
-    (0..(tabCount - 1))
+    (0 until tabCount)
       .map { tabSwitcher.getTab(it) }
       .filter { it is TermTab && it.termData.termSession == session }
-      .forEach { return }
+      .forEach { _ -> return }
 
     val sessionCallback = session.sessionChangedCallback as TermSessionCallback
     val viewClient = TermViewClient(this)
@@ -667,10 +651,10 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
     // Do not add the same session again
     // Or app will crash when rotate
     val tabCount = tabSwitcher.count
-    (0..(tabCount - 1))
+    (0 until tabCount)
       .map { tabSwitcher.getTab(it) }
       .filter { it is XSessionTab && it.session == session }
-      .forEach { return }
+      .forEach { _ -> return }
 
     val tab = createXTab(session.mSessionName) as XSessionTab
 
@@ -767,7 +751,7 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
 
       (0 until size)
         .map { toolbar.getChildAt(it) }
-        .filterIsInstance(ImageButton::class.java)
+        .filterIsInstance<ImageButton>()
         .forEach { return it }
     }
 
@@ -889,19 +873,16 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
 
   fun update_colors() {
     // Simple fix to bug on custom color
-    Handler().postDelayed(
+    Handler(Looper.getMainLooper()).postDelayed(
       {
-
         if (tabSwitcher.count > 0) {
           val tab = tabSwitcher.selectedTab
           if (tab is TermTab) {
             tab.updateColorScheme()
           }
         }
-
       },
       100,
     )
   }
-
 }

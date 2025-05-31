@@ -37,7 +37,7 @@ class NeoTermRemoteInterface : AppCompatActivity(), ServiceConnection {
     val serviceIntent = Intent(this, NeoTermService::class.java)
     startService(serviceIntent)
     if (!bindService(serviceIntent, this, 0)) {
-      App.get().errorDialog(this, R.string.service_connection_failed, { finish() })
+      App.get().errorDialog(this, R.string.service_connection_failed) { finish() }
     }
   }
 
@@ -100,8 +100,8 @@ class NeoTermRemoteInterface : AppCompatActivity(), ServiceConnection {
       val extra = intent.extras?.get(Intent.EXTRA_STREAM)
       if (extra is Uri) {
         val path = this.getPathOfMediaUri(extra)
-        val file = File(path)
-        val dirPath = if (file.isDirectory) path else file.parent
+        val file = path?.let { File(it) }
+        val dirPath = if (file?.isDirectory == true) path else file?.parent
         val command = "cd " + Terminals.escapeString(dirPath)
         openTerm(command, null)
       }
@@ -121,29 +121,27 @@ class NeoTermRemoteInterface : AppCompatActivity(), ServiceConnection {
     val comp = ComponentManager.getComponent<UserScriptComponent>()
     val userScripts = comp.userScripts
     if (userScripts.isEmpty()) {
-      App.get().errorDialog(this, R.string.no_user_script_found, { finish() })
+      App.get().errorDialog(this, R.string.no_user_script_found) { finish() }
       return
     }
 
     if (intent.hasExtra(Intent.EXTRA_STREAM)) {
       // action send
-      val extra = intent.extras?.get(Intent.EXTRA_STREAM)
-
-      when (extra) {
+      when (val extra = intent.extras?.get(Intent.EXTRA_STREAM)) {
         is ArrayList<*> -> {
           extra.takeWhile { it is Uri }
             .mapTo(filesToHandle) {
               val uri = it as Uri
-              File(this.getPathOfMediaUri(uri)).absolutePath
+              this.getPathOfMediaUri(uri)?.let { it1 -> File(it1).absolutePath }.toString()
             }
         }
         is Uri -> {
-          filesToHandle.add(File(this.getPathOfMediaUri(extra)).absolutePath)
+          this.getPathOfMediaUri(extra)?.let { File(it).absolutePath }?.let { filesToHandle.add(it) }
         }
       }
     } else if (intent.data != null) {
       // action view
-      filesToHandle.add(File(intent.data?.path).absolutePath)
+      intent.data?.path?.let { File(it).absolutePath }?.let { filesToHandle.add(it) }
     }
 
     if (filesToHandle.isNotEmpty()) {
@@ -159,7 +157,7 @@ class NeoTermRemoteInterface : AppCompatActivity(), ServiceConnection {
   private fun setupUserScriptView(filesToHandle: MutableList<String>, userScripts: List<UserScript>) {
     setContentView(R.layout.ui_user_script_list)
     val filesList = findViewById<ListView>(R.id.user_script_file_list)
-    val filesAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesToHandle)
+    val filesAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, filesToHandle)
     filesList.adapter = filesAdapter
     filesList.setOnItemClickListener { _, _, position, _ ->
       MaterialAlertDialogBuilder(this@NeoTermRemoteInterface, R.style.DialogStyle)
@@ -174,9 +172,9 @@ class NeoTermRemoteInterface : AppCompatActivity(), ServiceConnection {
 
     val scriptsList = findViewById<ListView>(R.id.user_script_script_list)
     val scriptsListItem = mutableListOf<String>()
-    userScripts.mapTo(scriptsListItem, { it.scriptFile.nameWithoutExtension })
+    userScripts.mapTo(scriptsListItem) { it.scriptFile.nameWithoutExtension }
 
-    val scriptsAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, scriptsListItem)
+    val scriptsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, scriptsListItem)
     scriptsList.adapter = scriptsAdapter
 
     scriptsList.setOnItemClickListener { _, _, position, _ ->

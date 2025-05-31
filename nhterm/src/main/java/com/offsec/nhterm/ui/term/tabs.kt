@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.Toolbar
 import com.offsec.nhterm.NeoGLView
 import com.offsec.nhterm.R
@@ -80,6 +81,7 @@ class NeoTabDecorator(val context: NeoTermActivity) : TabSwitcherDecorator() {
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.N)
   override fun onShowTab(
     context: Context, tabSwitcher: TabSwitcher,
     view: View, tab: Tab, index: Int, viewType: Int, savedInstanceState: Bundle?
@@ -112,6 +114,7 @@ class NeoTabDecorator(val context: NeoTermActivity) : TabSwitcherDecorator() {
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.N)
   private fun bindXSessionView(tab: XSessionTab) {
     val sessionData = tab.sessionData ?: return
 
@@ -210,7 +213,7 @@ class NeoTabDecorator(val context: NeoTermActivity) : TabSwitcherDecorator() {
     }
   }
 
-  private fun createAutoCompleteListener(view: TerminalView): OnAutoCompleteListener? {
+  private fun createAutoCompleteListener(view: TerminalView): OnAutoCompleteListener {
     return TermCompleteListener(view)
   }
 
@@ -317,7 +320,7 @@ class TermTab(title: CharSequence) : NeoTab(title), TermUiPresenter {
   }
 
   override fun requireUpdateTitle(title: String?) {
-    if (title != null && title.isNotEmpty()) {
+    if (!title.isNullOrEmpty()) {
       this.title = title
       EventBus.getDefault().post(TitleChangedEvent(title))
       termData.viewClient?.updateExtraKeys(title)

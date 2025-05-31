@@ -113,15 +113,15 @@ class ShellProfile : NeoProfile() {
   var initialCommand = DefaultValues.initialCommand
 
   var enableBell = DefaultValues.enableBell
-  var enableExecveWrapper = DefaultValues.enableExecveWrapper
+  private var enableExecveWrapper = DefaultValues.enableExecveWrapper
   var enableSpecialVolumeKeys = DefaultValues.enableSpecialVolumeKeys
-  var enableAutoCompletion = DefaultValues.enableAutoCompletion
+  private var enableAutoCompletion = DefaultValues.enableAutoCompletion
   var enableBackKeyToEscape = DefaultValues.enableBackButtonBeMappedToEscape
   var enableExtraKeys = DefaultValues.enableExtraKeys
   var enableWordBasedIme = DefaultValues.enableWordBasedIme
 
-  var profileFont: String
-  var profileColorScheme: String
+  private var profileFont: String
+  private var profileColorScheme: String
 
   init {
     val fontComp = ComponentManager.getComponent<FontComponent>()
@@ -244,7 +244,7 @@ open class ShellTermSession private constructor(
       return this
     }
 
-    fun arg(arg: String?): Builder {
+    private fun arg(arg: String?): Builder {
       if (arg != null) {
         if (args == null) {
           args = mutableListOf(arg)
@@ -270,7 +270,7 @@ open class ShellTermSession private constructor(
       return this
     }
 
-    fun env(env: Pair<String, String>?): Builder {
+    private fun env(env: Pair<String, String>?): Builder {
       if (env != null) {
         if (this.env == null) {
           this.env = mutableListOf(env)
@@ -329,10 +329,9 @@ open class ShellTermSession private constructor(
       }
 
       val result = mutableListOf<String>()
-      return env.mapTo(result, { "${it.first}=${it.second}" })
+      return env.mapTo(result) { "${it.first}=${it.second}" }
         .toTypedArray()
     }
-
 
     private fun buildEnvironment(cwd: String?, systemShell: Boolean): Array<String> {
       val selectedCwd = cwd ?: NeoTermPath.HOME_PATH

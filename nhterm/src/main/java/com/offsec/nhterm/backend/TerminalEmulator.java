@@ -3,6 +3,8 @@ package com.offsec.nhterm.backend;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
@@ -48,7 +50,7 @@ public final class TerminalEmulator {
   public static final int CURSOR_STYLE_BAR = 2;
 
   /**
-   * Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character
+   * Used for invalid data - https://en.wikipedia.org/wiki/Replacement_character#Replacement_character
    */
   public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
 
@@ -919,117 +921,113 @@ public final class TerminalEmulator {
    * When in {@link #ESC_P} ("device control") sequence.
    */
   private void doDeviceControl(int b) {
-    switch (b) {
-      case (byte) '\\': // End of ESC \ string Terminator
-      {
-        String dcs = mOSCOrDeviceControlArgs.toString();
-        // DCS $ q P t ST. Request Status String (DECRQSS)
-        if (dcs.startsWith("$q")) {
-          if (dcs.equals("$q\"p")) {
-            // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
-            String csiString = "64;1\"p";
-            mSession.write("\033P1$r" + csiString + "\033\\");
-          } else {
-            finishSequenceAndLogError("Unrecognized DECRQSS string: '" + dcs + "'");
-          }
-        } else if (dcs.startsWith("+q")) {
-          // Request Termcap/Terminfo String. The string following the "q" is a list of names encoded in
-          // hexadecimal (2 digits per character) separated by ; which correspond to termcap or terminfo key
-          // names.
-          // Two special features are also recognized, which are not key names: Co for termcap colors (or colors
-          // for terminfo colors), and TN for termcap name (or name for terminfo name).
-          // xterm responds with DCS 1 + r P t ST for valid requests, adding to P t an = , and the value of the
-          // corresponding string that xterm would send, or DCS 0 + r P t ST for invalid requests. The strings are
-          // encoded in hexadecimal (2 digits per character).
-          // Example:
-          // :kr=\EOC: ks=\E[?1h\E=: ku=\EOA: le=^H:mb=\E[5m:md=\E[1m:\
-          // where
-          // kd=down-arrow key
-          // kl=left-arrow key
-          // kr=right-arrow key
-          // ku=up-arrow key
-          // #2=key_shome, "shifted home"
-          // #4=key_sleft, "shift arrow left"
-          // %i=key_sright, "shift arrow right"
-          // *7=key_send, "shifted end"
-          // k1=F1 function key
+    if (b == (byte) '\\') { // End of ESC \ string Terminator
+      String dcs = mOSCOrDeviceControlArgs.toString();
+      // DCS $ q P t ST. Request Status String (DECRQSS)
+      if (dcs.startsWith("$q")) {
+        if (dcs.equals("$q\"p")) {
+          // DECSCL, conformance level, https://www.vt100.net/docs/vt510-rm/DECSCL:
+          String csiString = "64;1\"p";
+          mSession.write("\033P1$r" + csiString + "\033\\");
+        } else {
+          finishSequenceAndLogError("Unrecognized DECRQSS string: '" + dcs + "'");
+        }
+      } else if (dcs.startsWith("+q")) {
+        // Request Termcap/Terminfo String. The string following the "q" is a list of names encoded in
+        // hexadecimal (2 digits per character) separated by ; which correspond to termcap or terminfo key
+        // names.
+        // Two special features are also recognized, which are not key names: Co for termcap colors (or colors
+        // for terminfo colors), and TN for termcap name (or name for terminfo name).
+        // xterm responds with DCS 1 + r P t ST for valid requests, adding to P t an = , and the value of the
+        // corresponding string that xterm would send, or DCS 0 + r P t ST for invalid requests. The strings are
+        // encoded in hexadecimal (2 digits per character).
+        // Example:
+        // :kr=\EOC: ks=\E[?1h\E=: ku=\EOA: le=^H:mb=\E[5m:md=\E[1m:\
+        // where
+        // kd=down-arrow key
+        // kl=left-arrow key
+        // kr=right-arrow key
+        // ku=up-arrow key
+        // #2=key_shome, "shifted home"
+        // #4=key_sleft, "shift arrow left"
+        // %i=key_sright, "shift arrow right"
+        // *7=key_send, "shifted end"
+        // k1=F1 function key
 
-          // Example: Request for ku is "ESC P + q 6 b 7 5 ESC \", where 6b7d=ku in hexadecimal.
-          // Xterm response in normal cursorColor mode:
-          // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x5B 0x41 = 27 91 65 = ESC [ A
-          // Xterm response in application cursorColor mode:
-          // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x4F 0x41 = 27 91 65 = ESC 0 A
+        // Example: Request for ku is "ESC P + q 6 b 7 5 ESC \", where 6b7d=ku in hexadecimal.
+        // Xterm response in normal cursorColor mode:
+        // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x5B 0x41 = 27 91 65 = ESC [ A
+        // Xterm response in application cursorColor mode:
+        // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x4F 0x41 = 27 91 65 = ESC 0 A
 
-          // #4 is "shift arrow left":
-          // *** Device Control (DCS) for '#4'- 'ESC P + q 23 34 ESC \'
-          // Response: <27> P 1 + r 2 3 3 4 = 1 B 5 B 3 1 3 B 3 2 4 4 <27> \
-          // where 0x1B 0x5B 0x31 0x3B 0x32 0x44 = ESC [ 1 ; 2 D
-          // which we find in: TermKeyListener.java: KEY_MAP.put(KEYMOD_SHIFT | KEYCODE_DPAD_LEFT, "\033[1;2D");
+        // #4 is "shift arrow left":
+        // *** Device Control (DCS) for '#4'- 'ESC P + q 23 34 ESC \'
+        // Response: <27> P 1 + r 2 3 3 4 = 1 B 5 B 3 1 3 B 3 2 4 4 <27> \
+        // where 0x1B 0x5B 0x31 0x3B 0x32 0x44 = ESC [ 1 ; 2 D
+        // which we find in: TermKeyListener.java: KEY_MAP.put(KEYMOD_SHIFT | KEYCODE_DPAD_LEFT, "\033[1;2D");
 
-          // See http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V40G_HTML/MAN/MAN4/0178____.HTM for what to
-          // respond, as well as http://www.freebsd.org/cgi/man.cgi?query=termcap&sektion=5#CAPABILITIES for
-          // the meaning of e.g. "ku", "kd", "kr", "kl"
+        // See http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V40G_HTML/MAN/MAN4/0178____.HTM for what to
+        // respond, as well as http://www.freebsd.org/cgi/man.cgi?query=termcap&sektion=5#CAPABILITIES for
+        // the meaning of e.g. "ku", "kd", "kr", "kl"
 
-          for (String part : dcs.substring(2).split(";")) {
-            if (part.length() % 2 == 0) {
-              StringBuilder transBuffer = new StringBuilder();
-              for (int i = 0; i < part.length(); i += 2) {
-                char c = (char) Long.decode("0x" + part.charAt(i) + "" + part.charAt(i + 1)).longValue();
-                transBuffer.append(c);
-              }
-              String trans = transBuffer.toString();
-              String responseValue;
+        for (String part : dcs.substring(2).split(";")) {
+          if (part.length() % 2 == 0) {
+            StringBuilder transBuffer = new StringBuilder();
+            for (int i = 0; i < part.length(); i += 2) {
+              char c = (char) Long.decode("0x" + part.charAt(i) + part.charAt(i + 1)).longValue();
+              transBuffer.append(c);
+            }
+            String trans = transBuffer.toString();
+            String responseValue;
+            switch (trans) {
+              case "Co":
+              case "colors":
+                responseValue = "256"; // Number of colors.
+                break;
+              case "TN":
+              case "name":
+                responseValue = "xterm";
+                break;
+              default:
+                responseValue = KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
+                  isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD));
+                break;
+            }
+            if (responseValue == null) {
               switch (trans) {
-                case "Co":
-                case "colors":
-                  responseValue = "256"; // Number of colors.
-                  break;
-                case "TN":
-                case "name":
-                  responseValue = "xterm";
+                case "%1": // Help key - ignore
+                case "&8": // Undo key - ignore.
                   break;
                 default:
-                  responseValue = KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
-                    isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD));
-                  break;
+                  Log.w(EmulatorDebug.LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
               }
-              if (responseValue == null) {
-                switch (trans) {
-                  case "%1": // Help key - ignore
-                  case "&8": // Undo key - ignore.
-                    break;
-                  default:
-                    Log.w(EmulatorDebug.LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
-                }
-                // Respond with invalid request:
-                mSession.write("\033P0+r" + part + "\033\\");
-              } else {
-                StringBuilder hexEncoded = new StringBuilder();
-                for (int j = 0; j < responseValue.length(); j++) {
-                  hexEncoded.append(String.format("%02X", (int) responseValue.charAt(j)));
-                }
-                mSession.write("\033P1+r" + part + "=" + hexEncoded + "\033\\");
-              }
+              // Respond with invalid request:
+              mSession.write("\033P0+r" + part + "\033\\");
             } else {
-              Log.e(EmulatorDebug.LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
+              StringBuilder hexEncoded = new StringBuilder();
+              for (int j = 0; j < responseValue.length(); j++) {
+                hexEncoded.append(String.format("%02X", (int) responseValue.charAt(j)));
+              }
+              mSession.write("\033P1+r" + part + "=" + hexEncoded + "\033\\");
             }
+          } else {
+            Log.e(EmulatorDebug.LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
           }
-        } else {
-          if (LOG_ESCAPE_SEQUENCES)
-            Log.e(EmulatorDebug.LOG_TAG, "Unrecognized device control string: " + dcs);
         }
-        finishSequence();
+      } else {
+        if (LOG_ESCAPE_SEQUENCES)
+          Log.e(EmulatorDebug.LOG_TAG, "Unrecognized device control string: " + dcs);
       }
-      break;
-      default:
-        if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
-          // Too long.
-          mOSCOrDeviceControlArgs.setLength(0);
-          finishSequence();
-        } else {
-          mOSCOrDeviceControlArgs.appendCodePoint(b);
-          continueSequence(mEscapeState);
-        }
+      finishSequence();
+    } else {
+      if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
+        // Too long.
+        mOSCOrDeviceControlArgs.setLength(0);
+        finishSequence();
+      } else {
+        mOSCOrDeviceControlArgs.appendCodePoint(b);
+        continueSequence(mEscapeState);
+      }
     }
   }
 
@@ -1091,14 +1089,11 @@ public final class TerminalEmulator {
           doDecSetOrReset(b == 'h', mArgs[i]);
         break;
       case 'n': // Device Status Report (DSR, DEC-specific).
-        switch (getArg0(-1)) {
-          case 6:
-            // Extended Cursor Position (DECXCPR - http://www.vt100.net/docs/vt510-rm/DECXCPR). Page=1.
-            mSession.write(String.format(Locale.US, "\033[?%d;%d;1R", mCursorRow + 1, mCursorCol + 1));
-            break;
-          default:
-            finishSequence();
-            return;
+        if (getArg0(-1) == 6) {// Extended Cursor Position (DECXCPR - http://www.vt100.net/docs/vt510-rm/DECXCPR). Page=1.
+          mSession.write(String.format(Locale.US, "\033[?%d;%d;1R", mCursorRow + 1, mCursorCol + 1));
+        } else {
+          finishSequence();
+          return;
         }
         break;
       case 'r':
@@ -1332,13 +1327,10 @@ public final class TerminalEmulator {
   }
 
   private void doEscPound(int b) {
-    switch (b) {
-      case '8': // Esc # 8 - DEC screen alignment test - fill screen with E's.
-        mScreen.blockSet(0, 0, mColumns, mRows, 'E', getStyle());
-        break;
-      default:
-        unknownSequence(b);
-        break;
+    if (b == '8') { // Esc # 8 - DEC screen alignment test - fill screen with E's.
+      mScreen.blockSet(0, 0, mColumns, mRows, 'E', getStyle());
+    } else {
+      unknownSequence(b);
     }
   }
 
@@ -1356,7 +1348,7 @@ public final class TerminalEmulator {
       case ')':
         continueSequence(ESC_SELECT_RIGHT_PAREN);
         break;
-      case '6': // Back index (http://www.vt100.net/docs/vt510-rm/DECBI). Move left, insert blank column if start.
+      case '6': // Back index (https://www.vt100.net/docs/vt510-rm/DECBI). Move left, insert blank column if start.
         if (mCursorCol > mLeftMargin) {
           mCursorCol--;
         } else {
@@ -1916,17 +1908,13 @@ public final class TerminalEmulator {
   }
 
   private void doOscEsc(int b) {
-    switch (b) {
-      case '\\':
-        doOscSetTextParameters("\033\\");
-        break;
-      default:
-        // The ESC character was not followed by a \, so insert the ESC and
-        // the current character in arg buffer.
-        collectOSCArgs(27);
-        collectOSCArgs(b);
-        continueSequence(ESC_OSC);
-        break;
+    if (b == '\\') {
+      doOscSetTextParameters("\033\\");
+    } else {// The ESC character was not followed by a \, so insert the ESC and
+      // the current character in arg buffer.
+      collectOSCArgs(27);
+      collectOSCArgs(b);
+      continueSequence(ESC_OSC);
     }
   }
 
@@ -1985,7 +1973,7 @@ public final class TerminalEmulator {
             }
           } else if (parsingPairStart >= 0) {
             // We have passed a color index and are now going through color spec.
-          } else if (parsingPairStart < 0 && (b >= '0' && b <= '9')) {
+          } else if (b >= '0' && b <= '9') {
             colorIndex = ((colorIndex < 0) ? 0 : colorIndex * 10) + (b - '0');
           } else {
             unknownSequence(b);
@@ -2032,7 +2020,7 @@ public final class TerminalEmulator {
           String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), 0), StandardCharsets.UTF_8);
           mSession.clipboardText(clipboardText);
         } catch (Exception e) {
-          Log.e(EmulatorDebug.LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "");
+          Log.e(EmulatorDebug.LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter);
         }
         break;
       case 104:
@@ -2153,15 +2141,7 @@ public final class TerminalEmulator {
    * https://vt100.net/docs/vt510-rm/chapter4.html#S4.3.3
    */
   private void parseArg(int inputByte) {
-    int[] bytes = new int[]{inputByte};
-    // Only doing this for ESC_CSI and not for other ESC_CSI_* since they seem to be using their
-    // own defaults with getArg*() calls, but there may be missed cases
-    if (mEscapeState == ESC_CSI) {
-      if ((mIsCSIStart && inputByte == ';') || // If sequence starts with a ; character, like \033[;m
-        (!mIsCSIStart && mLastCSIArg != null && mLastCSIArg == ';'  && inputByte == ';')) {  // If sequence contains sequential ; characters, like \033[;;m
-        bytes = new int[]{'0', ';'}; // Assume 0 was passed
-      }
-    }
+    int[] bytes = getInts(inputByte);
 
     mIsCSIStart = false;
 
@@ -2189,6 +2169,19 @@ public final class TerminalEmulator {
       }
       mLastCSIArg = b;
     }
+  }
+
+  private int [] getInts(int inputByte) {
+    int[] bytes = new int[]{inputByte};
+    // Only doing this for ESC_CSI and not for other ESC_CSI_* since they seem to be using their
+    // own defaults with getArg*() calls, but there may be missed cases
+    if (mEscapeState == ESC_CSI) {
+      if ((mIsCSIStart && inputByte == ';') || // If sequence starts with a ; character, like \033[;m
+        (!mIsCSIStart && mLastCSIArg != null && mLastCSIArg == ';'  && inputByte == ';')) {  // If sequence contains sequential ; characters, like \033[;;m
+        bytes = new int[]{'0', ';'}; // Assume 0 was passed
+      }
+    }
+    return bytes;
   }
 
   private int getArg0(int defaultValue) {
@@ -2538,10 +2531,9 @@ public final class TerminalEmulator {
     boolean mUseLineDrawingG0, mUseLineDrawingG1, mUseLineDrawingUsesG0 = true;
   }
 
-  @Override
+  @NonNull @Override
   public String toString() {
     return "TerminalEmulator[size=" + mScreen.mColumns + "x" + mScreen.mScreenRows + ", margins={" + mTopMargin + "," + mRightMargin + "," + mBottomMargin
       + "," + mLeftMargin + "}]";
   }
-
 }

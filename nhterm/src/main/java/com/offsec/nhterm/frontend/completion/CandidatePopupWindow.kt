@@ -88,7 +88,7 @@ class CandidatePopupWindow(val context: Context) {
     candidates = null
   }
 
-  class CandidateAdapter(val candidatePopupWindow: CandidatePopupWindow) : BaseAdapter() {
+  class CandidateAdapter(private val candidatePopupWindow: CandidatePopupWindow) : BaseAdapter() {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
       var convertView = convertView
       val viewHolder: CandidateViewHolder =
@@ -131,8 +131,8 @@ class CandidatePopupWindow(val context: Context) {
   }
 
   class CandidateViewHolder(rootView: View) {
-    val display: TextView = rootView.findViewById<TextView>(R.id.complete_display)
-    val description: TextView = rootView.findViewById<TextView>(R.id.complete_description)
+    val display: TextView = rootView.findViewById(R.id.complete_display)
+    val description: TextView = rootView.findViewById(R.id.complete_description)
     val splitView: View = rootView.findViewById(R.id.complete_split)
 
     init {

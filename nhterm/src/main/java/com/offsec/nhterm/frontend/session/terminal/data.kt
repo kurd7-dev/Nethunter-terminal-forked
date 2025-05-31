@@ -9,7 +9,7 @@ import com.offsec.nhterm.frontend.session.view.extrakey.ExtraKeysView
 
 class TermSessionData {
   var termSession: TerminalSession? = null
-  var sessionCallback: TermSessionCallback? = null
+  private var sessionCallback: TermSessionCallback? = null
   var viewClient: TermViewClient? = null
   var onAutoCompleteListener: OnAutoCompleteListener? = null
 

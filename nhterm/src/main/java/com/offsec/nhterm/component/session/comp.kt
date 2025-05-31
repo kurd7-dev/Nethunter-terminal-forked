@@ -37,7 +37,7 @@ class SessionComponent : NeoComponent {
           .plus(Globals.XAPP_LIBS)
           .forEach {
             val soPath = "${NeoTermPath.LIB_PATH}/xorg-neoterm/${wrapLibraryName(it)}"
-            NLog.e("SessionComponent", "Loading lib " + soPath)
+            NLog.e("SessionComponent", "Loading lib $soPath")
             try {
               System.load(soPath)
             } catch (error: UnsatisfiedLinkError) {
@@ -51,7 +51,7 @@ class SessionComponent : NeoComponent {
         result = true
 
       } catch (ignore: UnsatisfiedLinkError) {
-        NLog.e("SessionComponent", ignore.localizedMessage)
+        ignore.localizedMessage?.let { NLog.e("SessionComponent", it) }
         result = false
       }
 

@@ -22,7 +22,7 @@ object CompletionManager {
     this.candidateProviders[provider.providerName] = provider
   }
 
-  fun unregisterProvider(providerName: String) {
+  private fun unregisterProvider(providerName: String) {
     this.candidateProviders.remove(providerName)
   }
 
@@ -48,7 +48,7 @@ object CompletionManager {
   }
 }
 
-class ProviderDetector(val providers: List<ICandidateProvider>) : MarkScoreListener {
+class ProviderDetector(private val providers: List<ICandidateProvider>) : MarkScoreListener {
   private var detectedProvider: ICandidateProvider? = null
 
   override fun onMarkScore(score: Int) {
@@ -65,4 +65,3 @@ class ProviderDetector(val providers: List<ICandidateProvider>) : MarkScoreListe
     return detectedProvider
   }
 }
-

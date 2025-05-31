@@ -14,6 +14,7 @@ import com.offsec.nhterm.ui.other.BonusActivity
 import com.offsec.nhterm.utils.CrashHandler
 import com.offsec.nhterm.utils.NeoPermission
 import com.topjohnwu.superuser.Shell
+import androidx.core.net.toUri
 
 /**
  * @author kiva
@@ -49,7 +50,7 @@ class App : Application() {
   }
 
   fun openHelpLink() {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://neoterm.gitbooks.io/neoterm-wiki/content/"))
+    val intent = Intent(Intent.ACTION_VIEW, "https://neoterm.gitbooks.io/neoterm-wiki/content/".toUri())
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
   }

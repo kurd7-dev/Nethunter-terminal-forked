@@ -1,5 +1,6 @@
 package com.offsec.nhterm.component.pm;
 
+import android.os.Build;
 import com.offsec.nhterm.component.NeoComponent;
 
 import com.offsec.nhterm.component.NeoComponent;
@@ -57,7 +58,11 @@ public class PackageComponent implements NeoComponent {
   }
 
   private void tryParsePackages(File packageListFile, final boolean clearPrevious) throws IOException {
-    NeoPackageParser packageParser = new NeoPackageParser(Files.newInputStream(packageListFile.toPath()));
+    NeoPackageParser packageParser = null;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      packageParser = new NeoPackageParser(Files.newInputStream(packageListFile.toPath()));
+    }
+    assert packageParser != null;
     packageParser.setStateListener(new NeoPackageParser.ParseStateListener() {
       @Override
       public void onStartState() {

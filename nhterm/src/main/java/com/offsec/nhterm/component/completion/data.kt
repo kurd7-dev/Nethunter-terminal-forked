@@ -5,7 +5,7 @@ class CompletionCandidate(val completeString: String) {
   var description: String? = null
 }
 
-class CompletionResult(val candidates: List<CompletionCandidate>, var scoreMarker: MarkScoreListener) {
+class CompletionResult(val candidates: List<CompletionCandidate>, private var scoreMarker: MarkScoreListener) {
   fun markScore(score: Int) {
     scoreMarker.onMarkScore(score)
   }

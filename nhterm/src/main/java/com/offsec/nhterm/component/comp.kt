@@ -29,7 +29,7 @@ object ComponentManager {
       throw ComponentDuplicateException(componentClass.simpleName)
     }
     val component = createServiceInstance(componentClass)
-    COMPONENTS.put(componentClass, component)
+    COMPONENTS[componentClass] = component
     component.onServiceInit()
   }
 
@@ -72,7 +72,7 @@ object NeoInitializer {
     initComponents()
   }
 
-  fun initComponents() {
+  private fun initComponents() {
     ComponentManager.registerComponent(ConfigureComponent::class.java)
     ComponentManager.registerComponent(CodeGenComponent::class.java)
     ComponentManager.registerComponent(ColorSchemeComponent::class.java)

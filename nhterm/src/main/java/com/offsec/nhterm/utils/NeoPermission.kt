@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat

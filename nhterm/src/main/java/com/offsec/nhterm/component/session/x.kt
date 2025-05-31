@@ -87,6 +87,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
           builtinKeyboard.alpha = 0.7f
           builtinKeyboard.changeKeyboard(keyboard)
           builtinKeyboard.setOnKeyboardActionListener(object : KeyboardView.OnKeyboardActionListener {
+            @Deprecated("Deprecated in Java")
             override fun onPress(key: Int) {
               var key = key
               if (key == KeyEvent.KEYCODE_BACK)
@@ -107,6 +108,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
               mActivity.onKeyDown(key, KeyEvent(KeyEvent.ACTION_DOWN, key))
             }
 
+            @Deprecated("Deprecated in Java")
             override fun onRelease(key: Int) {
               var key = key
               if (key == KeyEvent.KEYCODE_BACK) {
@@ -179,16 +181,22 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
               }
             }
 
+            @Deprecated("Deprecated in Java")
             override fun onText(p1: CharSequence) {}
 
+            @Deprecated("Deprecated in Java")
             override fun swipeLeft() {}
 
+            @Deprecated("Deprecated in Java")
             override fun swipeRight() {}
 
+            @Deprecated("Deprecated in Java")
             override fun swipeDown() {}
 
+            @Deprecated("Deprecated in Java")
             override fun swipeUp() {}
 
+            @Deprecated("Deprecated in Java")
             override fun onKey(p1: Int, p2: IntArray) {}
           })
           mSessionData.screenKeyboard = builtinKeyboard
@@ -297,7 +305,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
 
     synchronized(mSessionData.textInput) {
       val text = (mSessionData.screenKeyboard as EditText).text.toString()
-      for (i in 0 until text.length) {
+      for (i in text.indices) {
         NeoRenderer.callNativeTextInput(text[i].toInt(), text.codePointAt(i))
       }
     }
@@ -311,7 +319,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
   }
 
   override fun updateScreenOrientation() {
-    var rotation: Int = windowManager.defaultDisplay.rotation
+    val rotation: Int = windowManager.defaultDisplay.rotation
     NeoAccelerometerReader.setGyroInvertedOrientation(
       rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_270
     )
@@ -332,7 +340,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
     try {
       mActivity.packageManager.getPackageInfo("tv.ouya", 0)
       return true
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (_: PackageManager.NameNotFoundException) {
     }
 
     val uiModeManager = mActivity.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager?
@@ -349,7 +357,7 @@ class XSession constructor(private val mActivity: AppCompatActivity, val mSessio
     }
   }
 
-  class SimpleKeyListener(var client: NeoXorgViewClient) : View.OnKeyListener {
+  class SimpleKeyListener(private var client: NeoXorgViewClient) : View.OnKeyListener {
 
     override fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
       if (event.action == KeyEvent.ACTION_UP && (keyCode == KeyEvent.KEYCODE_ENTER ||

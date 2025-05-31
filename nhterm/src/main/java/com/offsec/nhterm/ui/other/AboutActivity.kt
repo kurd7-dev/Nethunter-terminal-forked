@@ -28,6 +28,7 @@ import de.psdev.licensesdialog.licenses.SILOpenFontLicense11
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import androidx.core.net.toUri
 
 
 /**
@@ -53,104 +54,104 @@ class AboutActivity : AppCompatActivity() {
           "ADBToolkitInstaller",
           "https://github.com/Crixec/ADBToolKitsInstaller",
           "Copyright (c) 2017 Crixec",
-          GnuGeneralPublicLicense30()
-        )
+          GnuGeneralPublicLicense30(),
+        ),
       )
       notices.addNotice(
         Notice(
           "Android-Terminal-Emulator",
           "https://github.com/jackpal/Android-Terminal-Emulator",
           "Copyright (c) 2011-2016 Steven Luo",
-          ApacheSoftwareLicense20()
-        )
+          ApacheSoftwareLicense20(),
+        ),
       )
       notices.addNotice(
         Notice(
           "ChromeLikeTabSwitcher",
           "https://github.com/michael-rapp/ChromeLikeTabSwitcher",
           "Copyright (c) 2016-2017 Michael Rapp",
-          ApacheSoftwareLicense20()
-        )
+          ApacheSoftwareLicense20(),
+        ),
       )
       notices.addNotice(
         Notice(
           "Color-O-Matic",
           "https://github.com/GrenderG/Color-O-Matic",
           "Copyright 2016-2017 GrenderG",
-          GnuGeneralPublicLicense30()
-        )
+          GnuGeneralPublicLicense30(),
+        ),
       )
       notices.addNotice(
         Notice(
           "EventBus",
           "http://greenrobot.org",
           "Copyright (C) 2012-2016 Markus Junginger, greenrobot (http://greenrobot.org)",
-          ApacheSoftwareLicense20()
-        )
+          ApacheSoftwareLicense20(),
+        ),
       )
       notices.addNotice(
         Notice(
           "ModularAdapter",
           "https://wrdlbrnft.github.io/ModularAdapter",
           "Copyright (c) 2017 Wrdlbrnft",
-          MITLicense()
-        )
+          MITLicense(),
+        ),
       )
       notices.addNotice(
         Notice(
           "RecyclerTabLayout",
           "https://github.com/nshmura/RecyclerTabLayout",
           "Copyright (C) 2017 nshmura",
-          ApacheSoftwareLicense20()
-        )
+          ApacheSoftwareLicense20(),
+        ),
       )
       notices.addNotice(
         Notice(
           "RecyclerView-FastScroll",
           "Copyright (c) 2016, Tim Malseed",
           "Copyright (c) 2016, Tim Malseed",
-          ApacheSoftwareLicense20()
-        )
+          ApacheSoftwareLicense20(),
+        ),
       )
       notices.addNotice(
         Notice(
           "SortedListAdapter",
           "https://wrdlbrnft.github.io/SortedListAdapter/",
           "Copyright (c) 2017 Wrdlbrnft",
-          MITLicense()
-        )
+          MITLicense(),
+        ),
       )
       notices.addNotice(
         Notice(
           "Termux",
           "https://termux.com",
           "Copyright 2016-2017 Fredrik Fornwall",
-          GnuGeneralPublicLicense30()
-        )
+          GnuGeneralPublicLicense30(),
+        ),
       )
       notices.addNotice(
         Notice(
           "NeoTerm",
           "https://github.com/NeoTerm/NeoTerm",
           "Copyright (c) 2021 imkiva",
-          GnuGeneralPublicLicense30()
-        )
+          GnuGeneralPublicLicense30(),
+        ),
       )
       notices.addNotice(
         Notice(
           "Fira Code",
           "https://github.com/tonsky/FiraCode",
           "Copyright (c) 2022 Nikita Prokopov",
-          SILOpenFontLicense11()
-        )
+          SILOpenFontLicense11(),
+        ),
       )
       notices.addNotice(
         Notice(
           "Zed Fonts",
           "https://github.com/zed-industries/zed-fonts",
           "Copyright 2015-2021, Renzhi Li (aka. Belleve Invis, belleve@typeof.net)",
-          SILOpenFontLicense11()
-        )
+          SILOpenFontLicense11(),
+        ),
       )
       LicensesDialog.Builder(this)
         .setNotices(notices)
@@ -207,15 +208,15 @@ class AboutActivity : AppCompatActivity() {
 
   private fun openUrl(url: String) {
     val intent = Intent(Intent.ACTION_VIEW)
-    intent.data = Uri.parse(url)
+    intent.data = url.toUri()
     startActivity(intent)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home ->
         finish()
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 }

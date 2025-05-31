@@ -53,10 +53,10 @@ class ColorSchemeComponent : ConfigFileBasedComponent<NeoColorScheme>(NeoTermPat
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       File(baseDir)
         .listFiles(NEOLANG_FILTER)
-        .mapNotNull { this.loadConfigure(it) }
-        .forEach {
-          colors.put(it.colorName, it)
-        }
+        ?.mapNotNull { this.loadConfigure(it) }
+          ?.forEach {
+            colors[it.colorName] = it
+          }
 
       if (colors.containsKey(DefaultColorScheme.colorName)) {
         DEFAULT_COLOR = colors[DefaultColorScheme.colorName]!!

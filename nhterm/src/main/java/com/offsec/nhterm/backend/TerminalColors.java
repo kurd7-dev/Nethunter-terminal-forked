@@ -42,7 +42,7 @@ public final class TerminalColors {
   }
 
   /**
-   * Parse color according to http://manpages.ubuntu.com/manpages/intrepid/man3/XQueryColor.3.html
+   * Parse color according to https://manpages.ubuntu.com/manpages/intrepid/man3/XQueryColor.3.html
    * <p/>
    * Highest bit is set if successful, so return value is 0xFF${R}${G}${B}. Return 0 if failed.
    */
