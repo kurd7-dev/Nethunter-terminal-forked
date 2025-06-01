@@ -29,6 +29,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import androidx.core.net.toUri
+import com.offsec.nhterm.component.nethunter.NethunterComponent
 
 
 /**
@@ -190,20 +191,11 @@ class AboutActivity : AppCompatActivity() {
   }
 
    private fun resetApp(context: Context) {
-     val binDir = File(NeoTermPath.BIN_PATH)
      ////
      // As some roms act weird and cause issues like no assets are extracted on fresh run then we need to force
      // assets extraction
      ////
-     Shell.cmd("mkdir -p /data/data/com.offsec.nhterm/files/usr/").exec()
-     Shell.cmd("rm -rf /data/data/com.offsec.nhterm/files/usr/bin/*").exec()
-
-     extractAssetsDir("bin", "/data/data/com.offsec.nhterm/files/usr/bin/")
-
-     context.extractAssetsDir("bin", NeoTermPath.BIN_PATH)
-     binDir.listFiles()?.forEach {
-       Os.chmod(it.absolutePath, 448 /*Dec of 0700*/)
-     }
+     NethunterComponent.init(context)
   }
 
   private fun openUrl(url: String) {

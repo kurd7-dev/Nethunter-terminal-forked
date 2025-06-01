@@ -1,5 +1,6 @@
 package com.offsec.nhterm.utils
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
@@ -14,6 +15,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.DecimalFormat
 import androidx.core.net.toUri
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class RangedInt(private val number: Int, private val range: IntRange) {
   fun inc() = (number + 1).takeIf { range.contains(it) } ?: 0
@@ -38,6 +41,7 @@ fun Long.formatSizeInKB(): String {
   }
 }
 
+@SuppressLint("SuspiciousIndentation")
 fun Context.extractAssetsDir(assetDir: String, extractDir: String) = kotlin.runCatching {
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
   val targetDir = Paths.get(extractDir)
@@ -67,6 +71,23 @@ fun Context.extractAssetsDir(assetDir: String, extractDir: String) = kotlin.runC
         }
     }
   }
+}
+
+fun Executer(command: String?): String? {
+  val output = StringBuilder()
+  val p: Process
+  try {
+    p = Runtime.getRuntime().exec(command)
+    p.waitFor()
+    val reader = BufferedReader(InputStreamReader(p.inputStream))
+    var line: String?
+    while (reader.readLine().also { line = it } != null) {
+      output.append(line).append('\n')
+    }
+  } catch (e: Exception) {
+    e.printStackTrace()
+  }
+  return output.toString()
 }
 
 fun Context.runApt(
