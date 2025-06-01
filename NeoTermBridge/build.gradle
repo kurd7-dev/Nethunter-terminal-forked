@@ -1,8 +1,5 @@
 apply plugin: 'com.android.library'
 
-def libraryVersionCode = 1
-def libraryVersionName = "1.0"
-
 android {
   compileSdk rootProject.ext.android.COMPILE_SDK_VERSION
 
@@ -11,11 +8,14 @@ android {
     targetSdkVersion rootProject.ext.android.TARGET_SDK_VERSION
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
-
   buildTypes {
     release {
       minifyEnabled false
     }
+  }
+  compileOptions {
+    targetCompatibility 17
+    sourceCompatibility 17
   }
   namespace 'com.offsec.nhterm.bridge'
 }

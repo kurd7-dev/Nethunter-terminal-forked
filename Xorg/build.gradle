@@ -8,13 +8,15 @@ android {
     targetSdkVersion rootProject.ext.android.TARGET_SDK_VERSION
       testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
-
   buildTypes {
     release {
       minifyEnabled false
     }
   }
-
+  compileOptions {
+    targetCompatibility 17
+    sourceCompatibility 17
+  }
   sourceSets {
     main {
       jniLibs.srcDirs = ['src/main/jniLibs']

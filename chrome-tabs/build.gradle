@@ -12,6 +12,10 @@ android {
       minifyEnabled true
     }
   }
+  compileOptions {
+    targetCompatibility 17
+    sourceCompatibility 17
+  }
   namespace 'de.mrapp.android.tabswitcher'
 }
 
