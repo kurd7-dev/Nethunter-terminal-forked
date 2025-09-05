@@ -17,6 +17,7 @@ import com.offsec.nhterm.services.NeoTermService
 import com.offsec.nhterm.utils.NLog
 import java.io.File
 import java.nio.file.Files
+import androidx.core.content.edit
 
 class ConfigureComponent : NeoComponent {
   override fun onServiceInit() {
@@ -67,16 +68,14 @@ open class NeoConfigureFile(val configureFile: File) {
 object NeoPreference {
   const val KEY_HAPPY_EGG = "neoterm_fun_happy"
   const val KEY_FONT_SIZE = "neoterm_general_font_size"
-  const val KEY_CURRENT_SESSION = "neoterm_service_current_session"
+  private const val KEY_CURRENT_SESSION = "neoterm_service_current_session"
   const val KEY_SYSTEM_SHELL = "neoterm_core_system_shell"
   const val KEY_SOURCES = "neoterm_package_enabled_sources"
 
   const val VALUE_HAPPY_EGG_TRIGGER = 8
 
-  var MIN_FONT_SIZE: Int = 0
-    private set
-  var MAX_FONT_SIZE: Int = 0
-    private set
+  private var MIN_FONT_SIZE: Int = 0
+  private var MAX_FONT_SIZE: Int = 0
 
   private var preference: SharedPreferences? = null
 
@@ -110,9 +109,9 @@ object NeoPreference {
 
   fun store(key: String, value: Any) {
     when (value) {
-      is Int -> preference!!.edit().putInt(key, value).apply()
-      is String -> preference!!.edit().putString(key, value).apply()
-      is Boolean -> preference!!.edit().putBoolean(key, value).apply()
+      is Int -> preference!!.edit { putInt(key, value) }
+      is String -> preference!!.edit { putString(key, value) }
+      is Boolean -> preference!!.edit { putBoolean(key, value) }
     }
   }
 
@@ -132,7 +131,7 @@ object NeoPreference {
     return preference!!.getInt(key, defaultValue)
   }
 
-  fun loadString(key: String?, defaultValue: String?): String {
+  private fun loadString(key: String?, defaultValue: String?): String {
     return preference!!.getString(key, defaultValue).orEmpty()
   }
 
@@ -141,9 +140,9 @@ object NeoPreference {
   }
 
   fun storeCurrentSession(session: TerminalSession) {
-    preference!!.edit()
-      .putString(KEY_CURRENT_SESSION, session.mHandle)
-      .apply()
+    preference!!.edit {
+      putString(KEY_CURRENT_SESSION, session.mHandle)
+    }
   }
 
   fun getCurrentSession(termService: NeoTermService?): TerminalSession? {
@@ -154,7 +153,7 @@ object NeoPreference {
       .singleOrNull { it.mHandle == sessionHandle }
   }
 
-  fun setLoginShellName(loginProgramName: String?): Boolean {
+  private fun setLoginShellName(loginProgramName: String?): Boolean {
     if (loginProgramName == null) {
       return false
     }
@@ -166,7 +165,7 @@ object NeoPreference {
     return true
   }
 
-  fun getLoginShellName(): String {
+  private fun getLoginShellName(): String {
     return loadString(R.string.key_general_shell, DefaultValues.loginShell)
   }
 
@@ -175,10 +174,10 @@ object NeoPreference {
 
     // Some programs like ssh needs it
     val shell = File(NeoTermPath.NEOTERM_LOGIN_SHELL_PATH)
-    val loginProgramPath = findLoginProgram(loginProgramName) ?: {
+    val loginProgramPath = findLoginProgram(loginProgramName) ?: run {
       setLoginShellName(DefaultValues.loginShell)
       "${NeoTermPath.USR_PATH}/bin/${DefaultValues.loginShell}"
-    }()
+    }
 
     if (!shell.exists()) {
       symlinkLoginShell(loginProgramPath)
@@ -188,7 +187,7 @@ object NeoPreference {
   }
 
   fun validateFontSize(fontSize: Int): Int {
-    return Math.max(MIN_FONT_SIZE, Math.min(fontSize, MAX_FONT_SIZE))
+    return MIN_FONT_SIZE.coerceAtLeast(fontSize.coerceAtMost(MAX_FONT_SIZE))
   }
 
   private fun symlinkLoginShell(loginProgramPath: String) {
@@ -206,7 +205,7 @@ object NeoPreference {
     }
   }
 
-  fun findLoginProgram(loginProgramName: String): String? {
+  private fun findLoginProgram(loginProgramName: String): String? {
     val file = File("${NeoTermPath.USR_PATH}/bin", loginProgramName)
     return if (file.canExecute()) file.absolutePath else null
   }
@@ -214,91 +213,91 @@ object NeoPreference {
   fun getFontSize(): Int {
     return loadInt(
       KEY_FONT_SIZE,
-      DefaultValues.fontSize
+      DefaultValues.fontSize,
     )
   }
 
   fun getInitialCommand(): String {
     return loadString(
       R.string.key_general_initial_command,
-      DefaultValues.initialCommand
+      DefaultValues.initialCommand,
     )
   }
 
   fun isBellEnabled(): Boolean {
     return loadBoolean(
       R.string.key_general_bell,
-      DefaultValues.enableBell
+      DefaultValues.enableBell,
     )
   }
 
   fun isExecveWrapperEnabled(): Boolean {
     return loadBoolean(
       R.string.key_general_use_execve_wrapper,
-      DefaultValues.enableExecveWrapper
+      DefaultValues.enableExecveWrapper,
     )
   }
 
   fun isSpecialVolumeKeysEnabled(): Boolean {
     return loadBoolean(
       R.string.key_general_volume_as_control,
-      DefaultValues.enableSpecialVolumeKeys
+      DefaultValues.enableSpecialVolumeKeys,
     )
   }
 
   fun isAutoCompletionEnabled(): Boolean {
     return loadBoolean(
       R.string.key_general_auto_completion,
-      DefaultValues.enableAutoCompletion
+      DefaultValues.enableAutoCompletion,
     )
   }
 
   fun isBackButtonBeMappedToEscapeEnabled(): Boolean {
     return loadBoolean(
       R.string.key_generaL_backspace_map_to_esc,
-      DefaultValues.enableBackButtonBeMappedToEscape
+      DefaultValues.enableBackButtonBeMappedToEscape,
     )
   }
 
   fun isExtraKeysEnabled(): Boolean {
     return loadBoolean(
       R.string.key_ui_eks_enabled,
-      DefaultValues.enableExtraKeys
+      DefaultValues.enableExtraKeys,
     )
   }
 
   fun isExplicitExtraKeysWeightEnabled(): Boolean {
     return loadBoolean(
       R.string.key_ui_eks_weight_explicit,
-      DefaultValues.enableExplicitExtraKeysWeight
+      DefaultValues.enableExplicitExtraKeysWeight,
     )
   }
 
   fun isFullScreenEnabled(): Boolean {
     return loadBoolean(
       R.string.key_ui_fullscreen,
-      DefaultValues.enableFullScreen
+      DefaultValues.enableFullScreen,
     )
   }
 
   fun isHideToolbarEnabled(): Boolean {
     return loadBoolean(
       R.string.key_ui_hide_toolbar,
-      DefaultValues.enableAutoHideToolbar
+      DefaultValues.enableAutoHideToolbar,
     )
   }
 
   fun isNextTabEnabled(): Boolean {
     return loadBoolean(
       R.string.key_ui_next_tab_anim,
-      DefaultValues.enableSwitchNextTab
+      DefaultValues.enableSwitchNextTab,
     )
   }
 
   fun isWordBasedImeEnabled(): Boolean {
     return loadBoolean(
       R.string.key_general_enable_word_based_ime,
-      DefaultValues.enableWordBasedIme
+      DefaultValues.enableWordBasedIme,
     )
   }
 

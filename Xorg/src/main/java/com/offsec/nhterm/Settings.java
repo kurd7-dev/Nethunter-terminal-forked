@@ -33,7 +33,9 @@ import com.offsec.nhterm.xorg.R;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
 
@@ -192,8 +194,7 @@ public class Settings {
           idx = ii;
       Globals.RemapMultitouchGestureKeycode[i] = idx;
     }
-    for (int i = 0; i < Globals.MultitouchGesturesUsed.length; i++)
-      Globals.MultitouchGesturesUsed[i] = true;
+    Arrays.fill(Globals.MultitouchGesturesUsed, true);
     // Adjust coordinates of on-screen buttons from 800x480
     int displayX = 800;
     int displayY = 480;
@@ -205,10 +206,10 @@ public class Settings {
     } catch (Exception eeeee) {
     }
     for (int i = 0; i < Globals.ScreenKbControlsLayout.length; i++) {
-      Globals.ScreenKbControlsLayout[i][0] *= (float) displayX / 800.0f;
-      Globals.ScreenKbControlsLayout[i][2] *= (float) displayX / 800.0f;
-      Globals.ScreenKbControlsLayout[i][1] *= (float) displayY / 480.0f;
-      Globals.ScreenKbControlsLayout[i][3] *= (float) displayY / 480.0f;
+      Globals.ScreenKbControlsLayout[i][0] *= (int) ((float) displayX / 800.0f);
+      Globals.ScreenKbControlsLayout[i][2] *= (int) ((float) displayX / 800.0f);
+      Globals.ScreenKbControlsLayout[i][1] *= (int) ((float) displayY / 480.0f);
+      Globals.ScreenKbControlsLayout[i][3] *= (int) ((float) displayY / 480.0f);
       // Make them square
       int wh = Math.min(Globals.ScreenKbControlsLayout[i][2] - Globals.ScreenKbControlsLayout[i][0], Globals.ScreenKbControlsLayout[i][3] - Globals.ScreenKbControlsLayout[i][1]);
       Globals.ScreenKbControlsLayout[i][2] = Globals.ScreenKbControlsLayout[i][0] + wh;
@@ -345,9 +346,8 @@ public class Settings {
         //	Globals.TouchscreenKeyboardSize ++; // If there are only 4 buttons they are even bigger
       }
     }
-    ;
 
-    if (Globals.DataDir.length() == 0) {
+    if (Globals.DataDir.isEmpty()) {
       if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
         Log.i("SDL", "libSDL: SD card or external storage is not mounted (state " + Environment.getExternalStorageState() + "), switching to the internal storage.");
         Globals.DownloadToSdcard = false;
@@ -367,8 +367,9 @@ public class Settings {
     boolean success = true;
     if (dir.isDirectory()) {
       String[] children = dir.list();
-      for (int i = 0; i < children.length; i++) {
-        if (!deleteRecursively(new File(dir, children[i])))
+      assert children != null;
+      for (String child : children) {
+        if (!deleteRecursively(new File(dir, child)))
           success = false;
       }
     }
@@ -382,8 +383,9 @@ public class Settings {
     Log.v("SDL", "Deleting old file: " + dir.getAbsolutePath() + " exists " + dir.exists());
     if (dir.isDirectory()) {
       String[] children = dir.list();
-      for (int i = 0; i < children.length; i++) {
-        if (!deleteRecursively(new File(dir, children[i])))
+      assert children != null;
+      for (String child : children) {
+        if (!deleteRecursively(new File(dir, child)))
           success = false;
       }
     }
@@ -395,7 +397,7 @@ public class Settings {
   public static void DeleteFilesOnUpgrade(final NeoXorgViewClient p) {
     String[] files = Globals.DeleteFilesOnUpgrade.split(" ");
     for (String path : files) {
-      if (path.equals(""))
+      if (path.isEmpty())
         continue;
       deleteRecursivelyAndLog(new File(p.getContext().getFilesDir().getAbsolutePath() + "/" + path));
       for (String sdpath : SdcardAppPath.get().allPaths(p.getContext()))
@@ -506,7 +508,7 @@ public class Settings {
 
   static void setEnvVars(NeoXorgViewClient p) {
     String lang = Locale.getDefault().getLanguage();
-    if (Locale.getDefault().getCountry().length() > 0)
+    if (!Locale.getDefault().getCountry().isEmpty())
       lang = lang + "_" + Locale.getDefault().getCountry();
     Log.i("SDL", "libSDL: setting env LANGUAGE to '" + lang + "'");
     nativeSetEnv("LANG", lang);
@@ -653,7 +655,7 @@ public class Settings {
             return "/sdcard/Android/data/" + p.getPackageName() + "/files";
           return Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + p.getPackageName() + "/files";
         }
-        return p.getExternalFilesDir(null).getAbsolutePath();
+        return Objects.requireNonNull(p.getExternalFilesDir(null)).getAbsolutePath();
       }
 
       @Override
@@ -745,13 +747,10 @@ public class Settings {
   static final int SDL_ANDROID_CONFIG_VIDEO_DEPTH_BPP = 0;
 
   public static void setConfigOptionFromSDL(int option, int value) {
-    switch (option) {
-      case SDL_ANDROID_CONFIG_VIDEO_DEPTH_BPP:
-        Globals.VideoDepthBpp = value;
-        break;
-      default:
-        Log.e("SDL", "setConfigOptionFromSDL: cannot find option with ID " + option + ", value " + value);
-        break;
+    if (option == SDL_ANDROID_CONFIG_VIDEO_DEPTH_BPP) {
+      Globals.VideoDepthBpp = value;
+    } else {
+      Log.e("SDL", "setConfigOptionFromSDL: cannot find option with ID " + option + ", value " + value);
     }
     Save(MainActivity.instance);
   }

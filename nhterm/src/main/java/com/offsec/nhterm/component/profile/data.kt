@@ -60,11 +60,11 @@ abstract class NeoProfile : CodeGenObject, ConfigFileBasedObject {
     return getProfileBoolean(key) ?: fallback
   }
 
-  protected fun ConfigVisitor.getProfileString(key: String): String? {
+  private fun ConfigVisitor.getProfileString(key: String): String? {
     return this.getStringValue(profileMetaPath, key)
   }
 
-  protected fun ConfigVisitor.getProfileBoolean(key: String): Boolean? {
+  private fun ConfigVisitor.getProfileBoolean(key: String): Boolean? {
     return this.getBooleanValue(profileMetaPath, key)
   }
 }

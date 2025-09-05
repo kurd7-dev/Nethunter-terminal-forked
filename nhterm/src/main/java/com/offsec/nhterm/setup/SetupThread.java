@@ -58,7 +58,7 @@ final class SetupThread extends Thread {
         int totalBytes = sourceConnection.getSize();
 
         while ((zipEntry = zipInput.getNextEntry()) != null) {
-          totalReadBytes += zipEntry.getCompressedSize();
+          totalReadBytes += (int) zipEntry.getCompressedSize();
 
           final int totalReadBytesFinal = totalReadBytes;
           final int totalBytesFinal = totalBytes;

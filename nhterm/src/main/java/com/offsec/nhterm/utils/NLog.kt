@@ -33,7 +33,7 @@ object NLog {
   private annotation class TYPE
 
   private val T = charArrayOf('V', 'D', 'I', 'W', 'E', 'A')
-  private val FILE = 0x10
+  private const val FILE = 0x10
 
   private var executor: ExecutorService? = null
   private var logDir: String? = null       // log存储目录
@@ -47,12 +47,12 @@ object NLog {
   private var sConsoleFilter = V    // log控制台过滤器
   private var sFileFilter = V    // log文件过滤器
 
-  private val LINE_SEP = System.getProperty("line.separator")
-  private val MAX_LEN = 4000
+  private val LINE_SEP = System.lineSeparator()
+  private const val MAX_LEN = 4000
   private val FORMAT = SimpleDateFormat("MM-dd HH:mm:ss.SSS ", Locale.getDefault())
 
-  private val NULL_TIPS = "Log with null object."
-  private val ARGS = "args"
+  private const val NULL_TIPS = "Log with null object."
+  private const val ARGS = "args"
 
   fun init(context: Context) {
     logDir = context.getDir("logs", Context.MODE_PRIVATE).absolutePath
@@ -203,7 +203,7 @@ object NLog {
       print(type, tag, msg.substring(0, MAX_LEN))
       var sub: String
       var index = MAX_LEN
-      for (i in 1..countOfSub - 1) {
+      for (i in 1 until countOfSub) {
         sub = msg.substring(index, index + MAX_LEN)
         print(type, tag, sub)
         index += MAX_LEN
@@ -224,7 +224,7 @@ object NLog {
     val format = FORMAT.format(now)
     val date = format.substring(0, 5)
     val time = format.substring(6)
-    val fullPath = logDir + date + ".txt"
+    val fullPath = "$logDir$date.txt"
     if (!createOrExistsFile(fullPath)) {
       Log.e(tag, "log to $fullPath failed!")
       return
@@ -251,9 +251,7 @@ object NLog {
         Log.e(tag, "log to $fullPath failed!")
       } finally {
         try {
-          if (bw != null) {
-            bw.close()
-          }
+          bw?.close()
         } catch (e: IOException) {
           e.printStackTrace()
         }
@@ -272,7 +270,6 @@ object NLog {
       e.printStackTrace()
       return false
     }
-
   }
 
   private fun createOrExistsDir(file: File?): Boolean {

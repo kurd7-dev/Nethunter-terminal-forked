@@ -25,6 +25,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import com.offsec.nhterm.backend.EmulatorDebug;
 import com.offsec.nhterm.backend.KeyHandler;
 import com.offsec.nhterm.backend.TerminalBuffer;
@@ -130,7 +131,7 @@ public final class TerminalView extends View {
       private boolean draggedAfterDoubleTap;
 
       @Override
-      public boolean onUp(MotionEvent e) {
+      public boolean onUp(@NonNull MotionEvent e) {
         mScrollRemainder = 0.0f;
         // 只有在没有选中文字的时候可以发送鼠标事件： !isSelectingText
         if (mEmulator != null && mEmulator.isMouseTrackingActive() && !mIsSelectingText && !scrolledWithFinger) {
@@ -145,7 +146,7 @@ public final class TerminalView extends View {
       }
 
       @Override
-      public boolean onSingleTapUp(MotionEvent e) {
+      public boolean onSingleTapUp(@NonNull MotionEvent e) {
         if (mEmulator == null) return true;
         if (mIsSelectingText) {
           toggleSelectingText(null);
@@ -162,7 +163,7 @@ public final class TerminalView extends View {
       }
 
       @Override
-      public boolean onScroll(MotionEvent e, float distanceX, float distanceY) {
+      public boolean onScroll(@NonNull MotionEvent e, float distanceX, float distanceY) {
         // 如果在选择文字时，不允许滑动屏幕，因为文字选择器需要滑动
         if (mEmulator == null || mIsSelectingText) return true;
 
@@ -194,7 +195,7 @@ public final class TerminalView extends View {
       }
 
       @Override
-      public boolean onFling(final MotionEvent e2, float velocityX, float velocityY) {
+      public boolean onFling(@NonNull final MotionEvent e2, float velocityX, float velocityY) {
         // 选择文字时，文字选择器会用到触摸操作，这里不管
         if (mEmulator == null || mIsSelectingText) return true;
 
@@ -237,7 +238,7 @@ public final class TerminalView extends View {
       }
 
       @Override
-      public boolean onDoubleTap(MotionEvent e) {
+      public boolean onDoubleTap(@NonNull MotionEvent e) {
         // Old behavior: Do not treat is as a single confirmed tap - it may be followed by zoom.
 
         // For treating double tap as MOUSE_LEFT_BUTTON_MOVED event
@@ -249,7 +250,7 @@ public final class TerminalView extends View {
       // For treating double tap as MOUSE_LEFT_BUTTON_MOVED event
       // e.g in vim, we can change window size with fingers moving.
       @Override
-      public boolean onDoubleTapEvent(MotionEvent e) {
+      public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
         if (mEmulator.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
           switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -280,7 +281,7 @@ public final class TerminalView extends View {
       }
 
       @Override
-      public void onLongPress(MotionEvent e) {
+      public void onLongPress(@NonNull MotionEvent e) {
         if (mGestureRecognizer.isInProgress()) return;
         if (mClient.onLongPress(e)) return;
         if (!mIsSelectingText) {
@@ -341,7 +342,7 @@ public final class TerminalView extends View {
     // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
 
     if (mEnableWordBasedIme) {
-      // Workaround for Google Pinying cannot input Chinese
+      // Workaround for Google Pinning cannot input Chinese
       outAttrs.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
     } else {
       outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_NULL;
@@ -463,7 +464,7 @@ public final class TerminalView extends View {
   public void onScreenUpdated() {
     if (mEmulator == null) return;
     boolean skipScrolling = false;
-    boolean isScreenHeld = false;
+    boolean isScreenHeld = mTopRow != 0;
 
     // currentScroll 记录了当前滚动到的位置
     // expectedScroll 记录了假设一直跟随输出滚动在最底部时的滚动位置
@@ -472,10 +473,6 @@ public final class TerminalView extends View {
     // 那么这个时候我们就不跟随输出滚动屏幕
     // int currentScroll = computeVerticalScrollOffset();
     // int expectedScroll = mEmulator.getScreen().getActiveRows() - mEmulator.mRows;
-
-    if (mTopRow != 0) {
-      isScreenHeld = true;
-    }
 
     int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
     if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
@@ -542,7 +539,7 @@ public final class TerminalView extends View {
 
     if (toast != null)
       toast.cancel();
-    toast = Toast.makeText(getContext(), "" + getTextSize() + "", Toast.LENGTH_SHORT);
+    toast = Toast.makeText(getContext(), "" + getTextSize(), Toast.LENGTH_SHORT);
     toast.setDuration(Toast.LENGTH_SHORT);
     toast.show();
   }
@@ -804,7 +801,7 @@ public final class TerminalView extends View {
         char printingChar = (char) event.getUnicodeChar(metaState);
         if (printingChar != '\b') {
           // ASCII chars
-          onAutoCompleteListener.onCompletionRequired(new String(new char[]{printingChar}));
+          onAutoCompleteListener.onCompletionRequired(String.valueOf(printingChar));
         }
       }
     }
@@ -842,7 +839,7 @@ public final class TerminalView extends View {
         codePoint = 30; // control-^
       } else if (codePoint == '_' || codePoint == '7' || codePoint == '/') {
         // "Ctrl-/ sends 0x1f which is equivalent of Ctrl-_ since the days of VT102"
-        // - http://apple.stackexchange.com/questions/24261/how-do-i-send-c-that-is-control-slash-to-the-terminal
+        // - https://apple.stackexchange.com/questions/24261/how-do-i-send-c-that-is-control-slash-to-the-terminal
         codePoint = 31;
       } else if (codePoint == '8') {
         codePoint = 127; // DEL
@@ -955,7 +952,6 @@ public final class TerminalView extends View {
       scrollTo(0, 0);
       invalidate();
     }
-
   }
 
   @Override
@@ -1008,10 +1004,10 @@ public final class TerminalView extends View {
       TerminalBuffer screen = mEmulator.getScreen();
       if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
         // Selecting something other than whitespace. Expand to word.
-        while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
+        while (mSelX1 > 0 && !screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1).isEmpty()) {
           mSelX1--;
         }
-        while (mSelX2 < mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
+        while (mSelX2 < mEmulator.mColumns - 1 && !screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1).isEmpty()) {
           mSelX2++;
         }
       }

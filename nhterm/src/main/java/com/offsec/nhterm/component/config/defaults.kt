@@ -46,9 +46,5 @@ object NeoTermPath {
 
   private const val SOURCE = "http://http.kali.org/kali"
 
-  val DEFAULT_MAIN_PACKAGE_SOURCE: String
-
-  init {
-    DEFAULT_MAIN_PACKAGE_SOURCE = SOURCE
-  }
+  const val DEFAULT_MAIN_PACKAGE_SOURCE: String = SOURCE
 }

@@ -6,7 +6,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.offsec.nhterm.App;
-import com.offsec.nhterm.framework.database.*;
 
 import com.offsec.nhterm.framework.database.DatabaseDataType;
 import com.offsec.nhterm.framework.database.NeoTermSQLiteConfig;
@@ -59,7 +58,7 @@ public class NeoTermDatabase {
     this.neoTermSQLiteConfig = config;
     String saveDir = config.getSaveDir();
     if (saveDir != null
-      && saveDir.trim().length() > 0) {
+      && !saveDir.trim().isEmpty()) {
       this.db = createDataBaseFileOnSDCard(saveDir,
         config.getDatabaseName());
     } else {
@@ -414,11 +413,13 @@ public class NeoTermDatabase {
         if (tableInfo.containID) {
           DatabaseDataType dataType = SQLTypeParser.getDataType(tableInfo.primaryField);
           String idFieldName = tableInfo.primaryField.getName();
+          assert dataType != null;
           ValueHelper.setKeyValue(cursor, object, tableInfo.primaryField, dataType, cursor.getColumnIndex(idFieldName));
         }
 
         for (Field field : tableInfo.fieldToDataTypeMap.keySet()) {
           DatabaseDataType dataType = tableInfo.fieldToDataTypeMap.get(field);
+          assert dataType != null;
           ValueHelper.setKeyValue(cursor, object, field, dataType, cursor.getColumnIndex(field.getName()));
         }
         list.add(object);
@@ -454,10 +455,12 @@ public class NeoTermDatabase {
         if (tableInfo.containID) {
           DatabaseDataType dataType = SQLTypeParser.getDataType(tableInfo.primaryField);
           String idFieldName = tableInfo.primaryField.getName();
+          assert dataType != null;
           ValueHelper.setKeyValue(cursor, object, tableInfo.primaryField, dataType, cursor.getColumnIndex(idFieldName));
         }
         for (Field field : tableInfo.fieldToDataTypeMap.keySet()) {
           DatabaseDataType dataType = tableInfo.fieldToDataTypeMap.get(field);
+          assert dataType != null;
           ValueHelper.setKeyValue(cursor, object, field, dataType, cursor.getColumnIndex(field.getName()));
         }
         list.add(object);
@@ -514,6 +517,7 @@ public class NeoTermDatabase {
         throw new IllegalArgumentException("类型 " + id.getClass().getName() + " 不是主键的类型,主键的类型应该为 " + tableInfo.primaryField.getType().getName());
       }
     }
+    assert dataType != null;
     String idValue = ValueHelper.valueToString(dataType, id);
     String statement = SQLStatementHelper.deleteByWhere(tableInfo, tableInfo.primaryField == null ? "_id" : tableInfo.primaryField.getName() + " = " + idValue);
     if (neoTermSQLiteConfig.debugMode) {
@@ -536,9 +540,8 @@ public class NeoTermDatabase {
    * @param tableClass
    * @param where
    * @param bean
-   * @return
    */
-  public NeoTermDatabase updateByWhere(Class<?> tableClass, String where, Object bean) {
+  public void updateByWhere(Class<?> tableClass, String where, Object bean) {
     createTableIfNeed(tableClass);
     TableInfo tableInfo = TableHelper.from(tableClass);
     String statement = SQLStatementHelper.updateByWhere(tableInfo, bean, where);
@@ -546,7 +549,6 @@ public class NeoTermDatabase {
       NLog.INSTANCE.d(statement);
     }
     db.execSQL(statement);
-    return this;
   }
 
   /**
@@ -562,7 +564,7 @@ public class NeoTermDatabase {
     TableInfo tableInfo = TableHelper.from(tableClass);
     StringBuilder subStatement = new StringBuilder();
     if (tableInfo.containID) {
-      subStatement.append(tableInfo.primaryField.getName()).append(" = ").append(ValueHelper.valueToString(SQLTypeParser.getDataType(tableInfo.primaryField), id));
+      subStatement.append(tableInfo.primaryField.getName()).append(" = ").append(ValueHelper.valueToString(Objects.requireNonNull(SQLTypeParser.getDataType(tableInfo.primaryField)), id));
     } else {
       subStatement.append("_id = ").append((int) id);
     }
@@ -603,6 +605,7 @@ public class NeoTermDatabase {
         T bean = Reflect.on(tableClass).create().get();
         for (Field field : tableInfo.fieldToDataTypeMap.keySet()) {
           DatabaseDataType fieldType = tableInfo.fieldToDataTypeMap.get(field);
+          assert fieldType != null;
           ValueHelper.setKeyValue(cursor, bean, field, fieldType, cursor.getColumnIndex(field.getName()));
         }
         try {

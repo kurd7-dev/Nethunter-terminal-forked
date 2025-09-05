@@ -214,7 +214,7 @@ public final class TerminalRow {
       // Shift the rest of the line left.
       System.arraycopy(text, oldNextColumnIndex, text, newNextColumnIndex, mSpaceUsed - oldNextColumnIndex);
     }
-    mSpaceUsed += javaCharDifference;
+    mSpaceUsed += (short) javaCharDifference;
 
     // Store char. A combining character is stored at the end of the existing contents so that it modifies them:
     //noinspection ResultOfMethodCallIgnored - since we already now how many java chars is used.
@@ -247,7 +247,7 @@ public final class TerminalRow {
 
         // Shift the array leftwards.
         System.arraycopy(text, newNextNextColumnIndex, text, newNextColumnIndex, mSpaceUsed - newNextNextColumnIndex);
-        mSpaceUsed -= nextLen;
+        mSpaceUsed -= (short) nextLen;
       }
     }
   }
@@ -258,7 +258,7 @@ public final class TerminalRow {
     return true;
   }
 
-  public final long getStyle(int column) {
+  public long getStyle(int column) {
     return mStyle[column];
   }
 

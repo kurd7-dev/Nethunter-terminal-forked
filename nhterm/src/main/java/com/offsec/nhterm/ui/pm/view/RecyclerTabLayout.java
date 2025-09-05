@@ -28,6 +28,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.view.ViewCompat;
@@ -263,12 +264,12 @@ public class RecyclerTabLayout extends RecyclerView {
         scrollOffset = (int) (sLeft - dx);
 
         if (position == 0) {
-          float indicatorGap = (nextView.getMeasuredWidth() - selectedView.getMeasuredWidth()) / 2;
+          float indicatorGap = (float) (nextView.getMeasuredWidth() - selectedView.getMeasuredWidth()) / 2;
           mIndicatorGap = (int) (indicatorGap * positionOffset);
           mIndicatorScroll = (int) ((selectedView.getMeasuredWidth() + indicatorGap) * positionOffset);
 
         } else {
-          float indicatorGap = (nextView.getMeasuredWidth() - selectedView.getMeasuredWidth()) / 2;
+          float indicatorGap = (float) (nextView.getMeasuredWidth() - selectedView.getMeasuredWidth()) / 2;
           mIndicatorGap = (int) (indicatorGap * positionOffset);
           mIndicatorScroll = (int) dx;
         }
@@ -373,12 +374,12 @@ public class RecyclerTabLayout extends RecyclerView {
     public int mDx;
 
     @Override
-    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+    public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
       mDx += dx;
     }
 
     @Override
-    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+    public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
       switch (newState) {
         case SCROLL_STATE_IDLE:
           if (mDx > 0) {
@@ -413,6 +414,7 @@ public class RecyclerTabLayout extends RecyclerView {
       int center = mRecyclerTabLayout.getWidth() / 2;
       for (int position = last; position >= first; position--) {
         View view = mLinearLayoutManager.findViewByPosition(position);
+        assert view != null;
         if (view.getLeft() <= center) {
           mRecyclerTabLayout.setCurrentItem(position, false);
           break;
@@ -494,8 +496,7 @@ public class RecyclerTabLayout extends RecyclerView {
       super(viewPager);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
+    @NonNull @Override
     public DefaultAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
       TabTextView tabTextView = new TabTextView(parent.getContext());
 
@@ -594,19 +595,15 @@ public class RecyclerTabLayout extends RecyclerView {
       public ViewHolder(View itemView) {
         super(itemView);
         title = (TextView) itemView;
-        itemView.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            int pos = getAdapterPosition();
-            if (pos != NO_POSITION) {
-              getViewPager().setCurrentItem(pos, true);
-            }
+        itemView.setOnClickListener(v -> {
+          int pos = getAdapterPosition();
+          if (pos != NO_POSITION) {
+            getViewPager().setCurrentItem(pos, true);
           }
         });
       }
     }
   }
-
 
   public static class TabTextView extends AppCompatTextView {
 

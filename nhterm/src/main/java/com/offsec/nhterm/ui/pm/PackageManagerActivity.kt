@@ -33,7 +33,7 @@ import java.util.*
 class PackageManagerActivity : AppCompatActivity(), SearchView.OnQueryTextListener, SortedListAdapter.Callback {
   private val comparator = SortedListAdapter.ComparatorBuilder<PackageModel>()
     .setOrderForModel(PackageModel::class.java) { a, b ->
-      a.packageInfo.packageName!!.compareTo(b.packageInfo.packageName!!)
+      a.packageInfo.packageName.compareTo(b.packageInfo.packageName)
     }
     .build()
 
@@ -204,10 +204,10 @@ class PackageManagerActivity : AppCompatActivity(), SearchView.OnQueryTextListen
 
   private fun filter(models: List<PackageModel>, query: String): List<PackageModel> {
     val prepared = models.filter {
-      it.packageInfo.packageName!!.contains(query, true)
+      it.packageInfo.packageName.contains(query, true)
     }
 
-    return sortDistance(prepared, query) { it.packageName!! }
+    return sortDistance(prepared, query) { it.packageName }
       .map { it.first }
       .toList()
   }

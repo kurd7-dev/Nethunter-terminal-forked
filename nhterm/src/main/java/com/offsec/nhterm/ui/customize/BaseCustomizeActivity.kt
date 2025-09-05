@@ -20,8 +20,8 @@ import com.offsec.nhterm.utils.Terminals
 @SuppressLint("Registered")
 open class BaseCustomizeActivity : AppCompatActivity() {
   lateinit var terminalView: TerminalView
-  lateinit var viewClient: BasicViewClient
-  lateinit var sessionCallback: BasicSessionCallback
+  private lateinit var viewClient: BasicViewClient
+  private lateinit var sessionCallback: BasicSessionCallback
   lateinit var session: TerminalSession
   lateinit var extraKeysView: ExtraKeysView
 
@@ -51,9 +51,9 @@ open class BaseCustomizeActivity : AppCompatActivity() {
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home -> finish()
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 }

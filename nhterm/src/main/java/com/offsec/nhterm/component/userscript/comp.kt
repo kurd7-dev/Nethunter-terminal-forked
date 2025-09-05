@@ -15,9 +15,7 @@ class UserScript(val scriptFile: File)
 
 class UserScriptComponent : NeoComponent {
   var userScripts = listOf<UserScript>()
-  var binFiles = listOf<UserScript>()
-  val scriptDir = File(NeoTermPath.USER_SCRIPT_PATH)
-  val binDir = File(NeoTermPath.BIN_PATH)
+  private val scriptDir = File(NeoTermPath.USER_SCRIPT_PATH)
 
   override fun onServiceInit() = checkForFiles()
 
@@ -26,20 +24,12 @@ class UserScriptComponent : NeoComponent {
 
   override fun onServiceObtained() = checkForFiles()
 
-  fun extractDefaultScript(context: Context) = kotlin.runCatching {
-    Shell.cmd("mkdir -p /data/data/com.offsec.nhterm/files/usr/").exec()
-    Shell.cmd("rm -rf /data/data/com.offsec.nhterm/files/usr/bin/*")
+  private fun extractDefaultScript(context: Context) = kotlin.runCatching {
 
     // Usual user script extraction
     context.extractAssetsDir("scripts", NeoTermPath.USER_SCRIPT_PATH)
 
     scriptDir.listFiles()?.forEach {
-      Os.chmod(it.absolutePath, 448 /*Dec of 0700*/)
-    }
-
-    // Lets also extract the usual binaries too here
-    context.extractAssetsDir("bin", NeoTermPath.BIN_PATH)
-    binDir.listFiles()?.forEach {
       Os.chmod(it.absolutePath, 448 /*Dec of 0700*/)
     }
 
@@ -54,11 +44,6 @@ class UserScriptComponent : NeoComponent {
 
   private fun reloadScripts() {
     userScripts = scriptDir.listFiles()
-      .takeWhile { it.canExecute() }
-      .map { UserScript(it) }
-      .toList()
-
-    binFiles = binDir.listFiles()
       .takeWhile { it.canExecute() }
       .map { UserScript(it) }
       .toList()

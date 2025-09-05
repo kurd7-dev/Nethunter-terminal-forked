@@ -1,5 +1,7 @@
 package com.offsec.nhterm.framework.reflection;
 
+import androidx.annotation.NonNull;
+
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -310,7 +312,7 @@ public class Reflect {
    * @return Map to all fields.
    */
   public Map<String, Reflect> fields() {
-    Map<String, Reflect> result = new LinkedHashMap<String, Reflect>();
+    Map<String, Reflect> result = new LinkedHashMap<>();
     Class<?> type = type();
 
     do {
@@ -540,7 +542,7 @@ public class Reflect {
   /**
    * {@inheritDoc}
    */
-  @Override
+  @NonNull @Override
   public String toString() {
     return mObject.toString();
   }
