@@ -12,7 +12,7 @@ import java.util.Properties;
 public final class TerminalColorScheme {
 
   /**
-   * http://upload.wikimedia.org/wikipedia/en/1/15/Xterm_256color_chart.svg, but with blue color brighter.
+   * https://upload.wikimedia.org/wikipedia/en/1/15/Xterm_256color_chart.svg, but with blue color brighter.
    */
   public static final int[] DEFAULT_COLORS = {
     // 16 original colors. First 8 are dim.

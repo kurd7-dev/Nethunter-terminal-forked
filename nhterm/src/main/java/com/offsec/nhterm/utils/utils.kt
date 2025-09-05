@@ -1,5 +1,6 @@
 package com.offsec.nhterm.utils
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
@@ -13,6 +14,9 @@ import com.offsec.nhterm.frontend.floating.TerminalDialog
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.DecimalFormat
+import androidx.core.net.toUri
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class RangedInt(private val number: Int, private val range: IntRange) {
   fun inc() = (number + 1).takeIf { range.contains(it) } ?: 0
@@ -20,7 +24,7 @@ class RangedInt(private val number: Int, private val range: IntRange) {
 }
 
 fun Long.formatSizeInKB(): String {
-  val decimalFormat = DecimalFormat("####.00");
+  val decimalFormat = DecimalFormat("####.00")
   if (this < 1024) {
     return "$this KB"
   } else if (this < 1024 * 1024) {
@@ -37,13 +41,14 @@ fun Long.formatSizeInKB(): String {
   }
 }
 
+@SuppressLint("SuspiciousIndentation")
 fun Context.extractAssetsDir(assetDir: String, extractDir: String) = kotlin.runCatching {
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
   val targetDir = Paths.get(extractDir)
     Paths.get(extractDir)
     Files.createDirectories(targetDir)
     val assets = this.assets
-    assets.list(assetDir)?.let {
+    assets.list(assetDir)?.let { it ->
       it.map { targetDir.resolve(it) }
         .takeWhile { !Files.exists(it) }
         .forEach { targetPath ->
@@ -56,7 +61,7 @@ fun Context.extractAssetsDir(assetDir: String, extractDir: String) = kotlin.runC
     val targetDir = com.llamalab.safs.Paths.get(extractDir)
     com.llamalab.safs.Files.createDirectories(targetDir)
     val assets = this.assets
-    assets.list(assetDir)?.let {
+    assets.list(assetDir)?.let { it ->
       it.map { targetDir.resolve(it) }
         .takeWhile { !com.llamalab.safs.Files.exists(it) }
         .forEach { targetPath ->
@@ -68,11 +73,28 @@ fun Context.extractAssetsDir(assetDir: String, extractDir: String) = kotlin.runC
   }
 }
 
+fun Executer(command: String?): String? {
+  val output = StringBuilder()
+  val p: Process
+  try {
+    p = Runtime.getRuntime().exec(command)
+    p.waitFor()
+    val reader = BufferedReader(InputStreamReader(p.inputStream))
+    var line: String?
+    while (reader.readLine().also { line = it } != null) {
+      output.append(line).append('\n')
+    }
+  } catch (e: Exception) {
+    e.printStackTrace()
+  }
+  return output.toString()
+}
+
 fun Context.runApt(
   command: String, subCommand: String, extraArgs: String,
-  autoClose: Boolean = true, block: (Result<TerminalDialog>) -> Unit
+  autoClose: Boolean = true, block: (Result<TerminalDialog>) -> Unit,
 ) = TerminalDialog(this)
-  .execute(NeoTermPath.BIN_PATH + "/kali", command + " " + subCommand, extraArgs)
+  .execute(NeoTermPath.BIN_PATH + "/kali", "$command $subCommand", extraArgs)
   .imeEnabled(true)
   .onFinish { dialog, session ->
     val exit = session?.exitStatus ?: 1
@@ -111,7 +133,7 @@ private fun Context.getPathOfDocumentUri(uri: Uri) = if (isExternalStorageDocume
 } else if (isDownloadsDocument(uri)) {
   val id = DocumentsContract.getDocumentId(uri)
   val contentUri = ContentUris.withAppendedId(
-    Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
+    "content://downloads/public_downloads".toUri(), java.lang.Long.valueOf(id),
   )
   getDataColumn(this, contentUri, null, null)
 } else if (isMediaDocument(uri)) {
@@ -130,7 +152,7 @@ private fun Context.getPathOfDocumentUri(uri: Uri) = if (isExternalStorageDocume
  * Get the value of the data column for this Uri
  */
 private fun getDataColumn(context: Context, uri: Uri, selection: String?, selectionArgs: Array<String>?) =
-  context.contentResolver.query(uri, arrayOf("_data"), selection, selectionArgs, null)?.use {
+  context.contentResolver.query(uri, arrayOf("_data"), selection, selectionArgs, null)?.use { it ->
     if (it.moveToFirst()) {
       val columnIndex = it.getColumnIndex("_data").takeIf { it != -1 } ?: return@use null
       it.getString(columnIndex)

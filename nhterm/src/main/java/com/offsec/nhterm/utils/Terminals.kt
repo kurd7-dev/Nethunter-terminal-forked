@@ -19,7 +19,7 @@ import com.offsec.nhterm.frontend.session.view.extrakey.ExtraKeysView
  */
 object Terminals {
   fun setupTerminalView(terminalView: TerminalView?, terminalViewClient: com.offsec.nhterm.frontend.session.view.TerminalViewClient? = null) {
-    terminalView?.textSize = NeoPreference.getFontSize();
+    terminalView?.textSize = NeoPreference.getFontSize()
 
     val fontComponent = ComponentManager.getComponent<FontComponent>()
     fontComponent.applyFont(terminalView, null, fontComponent.getCurrentFont())

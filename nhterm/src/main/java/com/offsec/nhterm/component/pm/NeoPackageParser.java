@@ -166,7 +166,8 @@ public class NeoPackageParser {
     }
 
     splits[0] = line.substring(0, valueIndex).trim();
-    splits[1] = line.substring(valueIndex == line.length() ? valueIndex : valueIndex + 1).trim();
+    line.length();
+    splits[1] = line.substring(valueIndex + 1).trim();
     return true;
   }
 }

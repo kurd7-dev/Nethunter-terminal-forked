@@ -10,7 +10,7 @@ import com.offsec.nhterm.R
  * @author kiva
  */
 class GeneralSettingsActivity : BasePreferenceActivity() {
-
+  @Deprecated("Deprecated in Java")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     supportActionBar?.title = getString(R.string.general_settings)
@@ -18,13 +18,15 @@ class GeneralSettingsActivity : BasePreferenceActivity() {
     addPreferencesFromResource(R.xml.setting_general)
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onBuildHeaders(target: MutableList<PreferenceActivity.Header>?) {
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home -> finish()
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 }

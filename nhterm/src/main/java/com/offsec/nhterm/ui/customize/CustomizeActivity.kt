@@ -1,6 +1,7 @@
 package com.offsec.nhterm.ui.customize
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -8,6 +9,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.offsec.nhterm.R
 import com.offsec.nhterm.component.ComponentManager
 import com.offsec.nhterm.component.colorscheme.ColorSchemeComponent
@@ -94,7 +96,7 @@ class CustomizeActivity : BaseCustomizeActivity() {
     listener: AdapterView.OnItemSelectedListener
   ): Spinner {
     val spinner = findViewById<Spinner>(id)
-    val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data)
+    val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, data)
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
     spinner.adapter = adapter
     spinner.onItemSelectedListener = listener
@@ -112,10 +114,11 @@ class CustomizeActivity : BaseCustomizeActivity() {
     session.finishIfRunning()
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     if (resultCode == RESULT_OK && data != null) {
       val selected = this.getPathOfMediaUri( data.data)
-      if (selected != null && selected.isNotEmpty()) {
+      if (!selected.isNullOrEmpty()) {
         when (requestCode) {
           REQUEST_SELECT_FONT -> installFont(selected)
           REQUEST_SELECT_COLOR -> installColor(selected)
@@ -125,16 +128,19 @@ class CustomizeActivity : BaseCustomizeActivity() {
     super.onActivityResult(requestCode, resultCode, data)
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   private fun installColor(selected: String) {
     installFileTo(selected, NeoTermPath.COLORS_PATH)
     setupSpinners()
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   private fun installFont(selected: String) {
     installFileTo(selected, NeoTermPath.FONT_PATH)
     setupSpinners()
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   private fun installFileTo(file: String, targetDir: String) {
     kotlin.runCatching {
       val source = File(file)
@@ -145,9 +151,9 @@ class CustomizeActivity : BaseCustomizeActivity() {
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home -> finish()
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 }

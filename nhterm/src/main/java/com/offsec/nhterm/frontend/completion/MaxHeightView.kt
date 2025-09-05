@@ -16,29 +16,29 @@ class MaxHeightView : LinearLayout {
     var finalHeightMeasureSpec = heightMeasureSpec
 
     if (maxHeight > 0) {
-      val heightMode = View.MeasureSpec.getMode(heightMeasureSpec)
-      var heightSize = View.MeasureSpec.getSize(heightMeasureSpec)
+      val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+      var heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-      if (heightMode == View.MeasureSpec.EXACTLY) {
+      if (heightMode == MeasureSpec.EXACTLY) {
         heightSize = if (heightSize <= maxHeight)
           heightSize
         else
           maxHeight
       }
 
-      if (heightMode == View.MeasureSpec.UNSPECIFIED) {
+      if (heightMode == MeasureSpec.UNSPECIFIED) {
         heightSize = if (heightSize <= maxHeight)
           heightSize
         else
           maxHeight
       }
-      if (heightMode == View.MeasureSpec.AT_MOST) {
+      if (heightMode == MeasureSpec.AT_MOST) {
         heightSize = if (heightSize <= maxHeight)
           heightSize
         else
           maxHeight
       }
-      finalHeightMeasureSpec = View.MeasureSpec.makeMeasureSpec(
+      finalHeightMeasureSpec = MeasureSpec.makeMeasureSpec(
         heightSize,
         heightMode
       )

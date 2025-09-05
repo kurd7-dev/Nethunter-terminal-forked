@@ -9,7 +9,7 @@ import com.offsec.nhterm.R
  * @author Lody
  */
 class SettingActivity : BasePreferenceActivity() {
-
+  @Deprecated("Deprecated in Java")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     supportActionBar?.title = getString(R.string.settings)
@@ -21,14 +21,16 @@ class SettingActivity : BasePreferenceActivity() {
     }
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onBuildHeaders(target: MutableList<Header>?) {
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item?.itemId) {
+    when (item.itemId) {
       android.R.id.home ->
         finish()
     }
-    return item?.let { super.onOptionsItemSelected(it) }
+    return item.let { super.onOptionsItemSelected(it) }
   }
 }

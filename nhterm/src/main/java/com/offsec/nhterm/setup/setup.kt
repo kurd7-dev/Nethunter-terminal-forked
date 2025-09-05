@@ -88,7 +88,7 @@ object SetupHelper {
     }
     throw RuntimeException(
       "Unable to determine arch from Build.SUPPORTED_ABIS =  "
-        + Arrays.toString(Build.SUPPORTED_ABIS)
+        + Build.SUPPORTED_ABIS.contentToString()
     )
   }
 }

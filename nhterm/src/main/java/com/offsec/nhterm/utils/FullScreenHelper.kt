@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.abs
 
 /**
  * Helper class to "adjustResize" Activity when we are in full screen mode and check IME status.
@@ -73,7 +74,7 @@ class FullScreenHelper private constructor(
     if (hasChange) {
       var keyboardHeight = 0
       val keyBoardIsShowing: Boolean
-      if (Math.abs(mOriginHeight - currHeight) < 100) {
+      if (abs(mOriginHeight - currHeight) < 100) {
         //hidden
         keyBoardIsShowing = false
       } else {
@@ -95,12 +96,12 @@ class FullScreenHelper private constructor(
     if (usableHeightNow != usableHeightPrevious) {
       val usableHeightSansKeyboard = mChildOfContent.rootView.height
       val heightDifference = usableHeightSansKeyboard - usableHeightNow
-      if (heightDifference > usableHeightSansKeyboard / 4) {
-        // screenKeyboard probably just became visible
-        currentHeightLayoutHeight = usableHeightSansKeyboard - heightDifference
+      currentHeightLayoutHeight = if (heightDifference > usableHeightSansKeyboard / 4) {
+          // screenKeyboard probably just became visible
+        usableHeightSansKeyboard - heightDifference
       } else {
-        // screenKeyboard probably just became hidden
-        currentHeightLayoutHeight = usableHeightSansKeyboard
+          // screenKeyboard probably just became hidden
+        usableHeightSansKeyboard
       }
       frameLayoutParams.height = currentHeightLayoutHeight
       mChildOfContent.requestLayout()

@@ -51,7 +51,7 @@ class TerminalDialog(val context: Context) {
       }
       .create()
 
-    val cmd = listOf(arguments + " " + extraarg + " && exit 0")
+    val cmd = listOf("$arguments $extraarg && exit 0")
 
     val parameter = ShellParameter()
       .executablePath(executablePath)
@@ -106,7 +106,7 @@ class WindowTermView(val context: Context) {
   @SuppressLint("InflateParams")
   var rootView: View = LayoutInflater.from(context).inflate(R.layout.ui_term_dialog, null, false)
     private set
-  var terminalView: TerminalView = rootView.findViewById<TerminalView>(R.id.terminal_view_dialog)
+  var terminalView: TerminalView = rootView.findViewById(R.id.terminal_view_dialog)
     private set
 
   init {

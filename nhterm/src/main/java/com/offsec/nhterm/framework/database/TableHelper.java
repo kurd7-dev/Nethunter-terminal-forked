@@ -1,7 +1,6 @@
 package com.offsec.nhterm.framework.database;
 
 import com.offsec.nhterm.framework.NeoTermDatabase;
-import com.offsec.nhterm.framework.NeoTermDatabase;
 import com.offsec.nhterm.framework.database.annotation.ID;
 import com.offsec.nhterm.framework.database.annotation.Table;
 import com.offsec.nhterm.framework.database.bean.TableInfo;
@@ -33,17 +32,17 @@ public class TableHelper {
     //Table注解解析
     Table table = clazz.getAnnotation(Table.class);
     String afterTableCreateMethod = table != null ? table.afterTableCreate() : null;
-    if (afterTableCreateMethod != null && afterTableCreateMethod.trim().length() > 0) {
+    if (afterTableCreateMethod != null && !afterTableCreateMethod.trim().isEmpty()) {
       try {
         Method method = clazz.getDeclaredMethod(afterTableCreateMethod, NeoTermDatabase.class);
-        if (method != null && Modifier.isStatic(method.getModifiers())) {
+        if (Modifier.isStatic(method.getModifiers())) {
           method.setAccessible(true);
           tableInfo.afterTableCreateMethod = method;
         }
       } catch (Throwable ignored) {
       }
     }
-    if (table != null && table.name().trim().length() != 0) {
+    if (table != null && !table.name().trim().isEmpty()) {
       tableInfo.tableName = table.name();
     } else {
       tableInfo.tableName = clazz.getName().replace(".", "_");
@@ -78,10 +77,8 @@ public class TableHelper {
    * 为一个Bean匹配一个ID字段,如果ID字段不存在,使用默认的_id替代.
    *
    * @param info
-   * @return
    */
-  private static TableInfo buildPrimaryIDForTableInfo(TableInfo info) {
-
+  private static void buildPrimaryIDForTableInfo(TableInfo info) {
     Field idField = null;
     ID id;
     for (Field field : info.fieldToDataTypeMap.keySet()) {
@@ -101,7 +98,6 @@ public class TableHelper {
       info.primaryField = null;
     }
 
-    return info;
   }
 
   /**
@@ -129,5 +125,3 @@ public class TableHelper {
   }
 
 }
-
-

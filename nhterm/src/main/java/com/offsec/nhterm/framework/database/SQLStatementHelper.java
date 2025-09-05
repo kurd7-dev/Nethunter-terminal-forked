@@ -5,6 +5,7 @@ import com.offsec.nhterm.framework.database.annotation.ID;
 import com.offsec.nhterm.framework.database.bean.TableInfo;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 /**
  * @author kiva
@@ -30,31 +31,28 @@ public class SQLStatementHelper {
         throw new IllegalArgumentException("Type of " + tableInfo.primaryField.getType().getName() + " is not support in WelikeDB.");
       }
       statement.append("'").append(tableInfo.primaryField.getName()).append("'");
-      switch (dataType) {
-        case INTEGER:
-          statement.append(" INTEGER PRIMARY KEY ");
-          ID id = tableInfo.primaryField.getAnnotation(ID.class);
-          if (id != null && id.autoIncrement()) {
-            statement.append("AUTOINCREMENT");
-          }
-          break;
-        default:
-          statement
-            .append("  ")
-            .append(dataType.name())
-            .append(" PRIMARY KEY");
+      if (dataType == DatabaseDataType.INTEGER) {
+        statement.append(" INTEGER PRIMARY KEY ");
+        ID id = tableInfo.primaryField.getAnnotation(ID.class);
+        if (id != null && id.autoIncrement()) {
+          statement.append("AUTOINCREMENT");
+        }
+      } else {
+        statement
+          .append("  ")
+          .append(dataType.name())
+          .append(" PRIMARY KEY");
       }
 
       statement.append(",");
-
 
     } else {
       statement.append("'_id' INTEGER PRIMARY KEY AUTOINCREMENT,");
     }
 
-
     for (Field field : tableInfo.fieldToDataTypeMap.keySet()) {
       DatabaseDataType dataType = tableInfo.fieldToDataTypeMap.get(field);
+      assert dataType != null;
       statement.append("'").append(field.getName()).append("'")
         .append(" ")
         .append(dataType.name());
@@ -84,18 +82,15 @@ public class SQLStatementHelper {
 
     if (tableInfo.containID) {
       DatabaseDataType primaryDataType = SQLTypeParser.getDataType(tableInfo.primaryField);
-      switch (primaryDataType) {
-        case INTEGER:
-          statement.append("NULL,");
-          break;
-        default:
-          try {
-            statement
-              .append(ValueHelper.valueToString(primaryDataType, tableInfo.primaryField, o))
-              .append(",");
-          } catch (IllegalAccessException ignored) {
-          }
-          break;
+      if (Objects.requireNonNull(primaryDataType) == DatabaseDataType.INTEGER) {
+        statement.append("NULL,");
+      } else {
+        try {
+          statement
+            .append(ValueHelper.valueToString(primaryDataType, tableInfo.primaryField, o))
+            .append(",");
+        } catch (IllegalAccessException ignored) {
+        }
       }
 
     } else {
@@ -105,6 +100,7 @@ public class SQLStatementHelper {
     for (Field field : tableInfo.fieldToDataTypeMap.keySet()) {
       DatabaseDataType dataType = tableInfo.fieldToDataTypeMap.get(field);
       try {
+        assert dataType != null;
         statement.append(ValueHelper.valueToString(dataType, field, o)).append(",");
       } catch (IllegalAccessException e) {
         //不会发生...
@@ -125,16 +121,14 @@ public class SQLStatementHelper {
    * @return
    */
   public static String findByWhere(TableInfo tableInfo, String where) {
-    StringBuilder statement = new StringBuilder("SELECT * FROM ");
-    statement
-      .append(tableInfo.tableName)
-      .append(" ")
-      .append("WHERE ")
-      .append(where);
+    String statement = "SELECT * FROM " +
+      tableInfo.tableName +
+      " " +
+      "WHERE " +
+      where;
 
-    return statement.toString();
+    return statement;
   }
-
 
   /**
    * 根据where条件创建删除语句
@@ -144,14 +138,13 @@ public class SQLStatementHelper {
    * @return
    */
   public static String deleteByWhere(TableInfo tableInfo, String where) {
-    StringBuilder statement = new StringBuilder("DELETE FROM ");
-    statement
-      .append(tableInfo.tableName)
-      .append(" ")
-      .append("WHERE ")
-      .append(where);
+    String statement = "DELETE FROM " +
+      tableInfo.tableName +
+      " " +
+      "WHERE " +
+      where;
 
-    return statement.toString();
+    return statement;
   }
 
   /**
@@ -173,7 +166,7 @@ public class SQLStatementHelper {
         builder.append(f.getName())
           .append(" = ")
           .append(ValueHelper.valueToString(
-            SQLTypeParser.getDataType(f.getType()),
+            Objects.requireNonNull(SQLTypeParser.getDataType(f.getType())),
             f.get(bean))).append(",");
       } catch (Throwable ignored) {
       }

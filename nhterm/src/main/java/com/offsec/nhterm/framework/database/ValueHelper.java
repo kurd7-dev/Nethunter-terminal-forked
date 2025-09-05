@@ -34,25 +34,25 @@ public class ValueHelper {
       case TEXT:
         try {
           field.set(object, cursor.getString(index));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException ignored) {
         }
         break;
       case FLOAT:
         try {
           field.set(object, cursor.getFloat(index));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException ignored) {
         }
         break;
       case BIGINT:
         try {
           field.set(object, cursor.getLong(index));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException ignored) {
         }
         break;
       case DOUBLE:
         try {
           field.set(object, cursor.getDouble(index));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException ignored) {
         }
         break;
 
@@ -78,7 +78,7 @@ public class ValueHelper {
           return String.valueOf((int) field.get(o));
         }
       case TEXT:
-        return "\"" + field.get(o) + "" + "\"";
+        return "\"" + field.get(o) + "\"";
       case DOUBLE:
         return String.valueOf((double) field.get(o));
       case FLOAT:

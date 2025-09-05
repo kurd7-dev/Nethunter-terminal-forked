@@ -19,7 +19,7 @@ class PackageAdapter(
   FastScrollRecyclerView.SectionedAdapter {
 
   override fun getSectionName(position: Int): String {
-    return getItem(position).packageInfo.packageName!!.substring(0, 1) ?: "#"
+    return getItem(position).packageInfo.packageName.substring(0, 1) ?: "#"
   }
 
   interface Listener {

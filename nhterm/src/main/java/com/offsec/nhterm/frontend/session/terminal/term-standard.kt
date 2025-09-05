@@ -107,7 +107,7 @@ class TermViewClient(val context: Context) :
       }
 
       // Use Alt + num to switch sessions
-      val sessionIndex = unicodeChar.toInt() - '0'.toInt()
+      val sessionIndex = unicodeChar.code - '0'.code
       termUI?.requireSwitchTo(sessionIndex)
 
       // 当要触发 NeoTerm 快捷键时，屏蔽所有终端处理key
@@ -160,24 +160,24 @@ class TermViewClient(val context: Context) :
         // Some special keys:
         't' -> resultingKeyCode = KeyEvent.KEYCODE_TAB
         'i' -> resultingKeyCode = KeyEvent.KEYCODE_INSERT
-        'h' -> resultingCodePoint = '~'.toInt()
+        'h' -> resultingCodePoint = '~'.code
 
         // Special characters to input.
-        'u' -> resultingCodePoint = '_'.toInt()
-        'l' -> resultingCodePoint = '|'.toInt()
+        'u' -> resultingCodePoint = '_'.code
+        'l' -> resultingCodePoint = '|'.code
 
         // Function keys.
-        '1', '2', '3', '4', '5', '6', '7', '8', '9' -> resultingKeyCode = codePoint - '1'.toInt() + KeyEvent.KEYCODE_F1
+        '1', '2', '3', '4', '5', '6', '7', '8', '9' -> resultingKeyCode = codePoint - '1'.code + KeyEvent.KEYCODE_F1
         '0' -> resultingKeyCode = KeyEvent.KEYCODE_F10
 
         // Other special keys.
         'e' -> resultingCodePoint = 27 /*Escape*/
         '.' -> resultingCodePoint = 28 /*^.*/
 
-        'b' // alt+b, jumping backward in readline.
-          , 'f' // alf+f, jumping forward in readline.
-          , 'x' // alt+x, common in emacs.
-        -> {
+        'b', // alt+b, jumping backward in readline.
+        'f', // alf+f, jumping forward in readline.
+        'x', // alt+x, common in emacs.
+          -> {
           resultingCodePoint = lowerCase
           altDown = true
         }
@@ -245,7 +245,7 @@ class TermViewClient(val context: Context) :
   fun updateExtraKeys(title: String?, force: Boolean = false) {
     val extraKeysView = termSessionData?.extraKeysView
 
-    if (extraKeysView == null || title == null || title.isEmpty()) {
+    if (extraKeysView == null || title.isNullOrEmpty()) {
       return
     }
 
@@ -294,7 +294,7 @@ class TermViewClient(val context: Context) :
 class TermSessionCallback : TerminalSession.SessionChangedCallback {
   var termSessionData: TermSessionData? = null
 
-  var bellController: BellController? = null
+  private var bellController: BellController? = null
 
   override fun onTextChanged(changedSession: TerminalSession?) {
     termSessionData?.termView?.onScreenUpdated()
@@ -340,7 +340,7 @@ class TermSessionCallback : TerminalSession.SessionChangedCallback {
 
 class BellController {
   companion object {
-    private val BELL_DELAY_MS = 100
+    private const val BELL_DELAY_MS = 100
   }
 
   private var bellId: Int = 0
@@ -390,7 +390,7 @@ class TermCompleteListener(var terminalView: TerminalView?) : OnAutoCompleteList
   }
 
   override fun onCompletionRequired(newText: String?) {
-    if (newText == null || newText.isEmpty()) {
+    if (newText.isNullOrEmpty()) {
       return
     }
     pushString(newText)

@@ -4,16 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.view.Gravity
 import android.widget.Toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.offsec.nhterm.component.NeoInitializer
 import com.offsec.nhterm.component.config.NeoPreference
+import com.offsec.nhterm.component.nethunter.NethunterComponent
 import com.offsec.nhterm.ui.other.BonusActivity
 import com.offsec.nhterm.utils.CrashHandler
-import com.offsec.nhterm.utils.NeoPermission
-import com.topjohnwu.superuser.Shell
+import androidx.core.net.toUri
 
 /**
  * @author kiva
@@ -23,8 +22,7 @@ class App : Application() {
     super.onCreate()
     app = this
 
-    Shell.cmd("setenforce 0").exec()
-
+    NethunterComponent.init(this)
     NeoPreference.init(this)
     CrashHandler.init()
     NeoInitializer.init(this)
@@ -49,7 +47,7 @@ class App : Application() {
   }
 
   fun openHelpLink() {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://neoterm.gitbooks.io/neoterm-wiki/content/"))
+    val intent = Intent(Intent.ACTION_VIEW, "https://neoterm.gitbooks.io/neoterm-wiki/content/".toUri())
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
   }
