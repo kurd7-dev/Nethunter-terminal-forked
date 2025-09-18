@@ -13,8 +13,8 @@ buildscript {
   ext {
     //version=YYYYMMVVRR (Either "VV" for stable version OR "RR" for pre-release candidate (e.g. 0001 for rc1))
     //noinspection HighAppVersionCode
-    versionCode=2023040200
-    versionName="2025.2-dev"
+    versionCode=2025090000
+    versionName="2025.3"
   }
 
   ext.deps = [
