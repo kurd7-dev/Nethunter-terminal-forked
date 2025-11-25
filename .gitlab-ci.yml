@@ -7,10 +7,10 @@ before_script:
 - apt update && apt -y install openjdk-17-jdk
 - JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 - export GRADLE_USER_HOME=$(pwd)/.gradle
-- export PACKAGE=`egrep '^[[:blank:]]+package' ./nhterm/src/main/AndroidManifest.xml | awk -F'[=>]' '{print $2}' | sed s/\"//g`
-- if test -z "${PACKAGE}"; then export PACKAGE=`egrep '^[[:blank:]]+applicationId' ./nhterm/build.gradle | awk -F'"' '{print $2}'`; fi
-- export VERSION_NAME=`egrep '^[[:blank:]]+versionName=' ./build.gradle | awk -F '"' '{print $2}'`
-- export VERSION_CODE=`egrep '^[[:blank:]]+versionCode=' ./build.gradle | awk -F '=' '{print $2}'`
+- export PACKAGE=$(egrep '^[[:blank:]]+package' ./nhterm/src/main/AndroidManifest.xml | awk -F'[=>]' '{print $2}' | sed s/\"//g)
+- if test -z "${PACKAGE}"; then export PACKAGE=$(egrep '^[[:blank:]]+applicationId' ./nhterm/build.gradle | awk -F'"' '{print $2}'); fi
+- export VERSION_NAME=$(egrep '^[[:blank:]]+versionName=' ./build.gradle | awk -F '"' '{print $2}')
+- export VERSION_CODE=$(egrep '^[[:blank:]]+versionCode=' ./build.gradle | awk -F '=' '{print $2}')
 - export APK_NAME="${PACKAGE}_${VERSION_CODE}"
 - chmod +x ./gradlew
 - echo $PACKAGE
@@ -22,8 +22,8 @@ before_script:
 # Jobs to build debug and unsigned release apk in accordance with the NetHunter Store naming conventions (<app id>_<version_code>.apk)
 # The artifacts are named <branch name>-<commit short sha>-<job name>.zip 
 # To execute a job using local runners, run "mkdir ./result" and one of the following:
-# sudo gitlab-runner exec docker .assembleDebug --docker-volumes `pwd`/result:/tmp/result
-# sudo gitlab-runner exec docker .assembleRelease --docker-volumes `pwd`/result:/tmp/result
+# $ sudo gitlab-runner exec docker .assembleDebug --docker-volumes `pwd`/result:/tmp/result
+# $ sudo gitlab-runner exec docker .assembleRelease --docker-volumes `pwd`/result:/tmp/result
 .assembleDebug:
   stage: build
   script:
