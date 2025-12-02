@@ -1,0 +1,2 @@
+-keep class de.mrapp.android.tabswitcher.** { *; }
+-keepclassmembers class de.mrapp.android.tabswitcher.** { *; }
