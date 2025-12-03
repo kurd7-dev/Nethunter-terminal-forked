@@ -1,5 +1,24 @@
 #!/data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash
-# Version: 1.0.3
+# Version: 1.0.8-magisk-kimo-these-nuts
+
+# Log file path (external storage)
+LOG_FILE="/sdcard/su.log"
+
+# Enable debug logging by setting ANDROID_SU_DEBUG=1 in the environment
+ANDROID_SU_DEBUG=${ANDROID_SU_DEBUG:-0}
+log_debug() {
+  if [ "$ANDROID_SU_DEBUG" = "1" ]; then
+    # Timestamp + message to stderr
+    echo "[android-su][DEBUG] $(date '+%Y-%m-%d %H:%M:%S') $*" >&2
+    # Also append to log file if writable
+    if [ -n "$LOG_FILE" ]; then
+      # Best-effort logging; don't fail if we can't write
+      {
+        echo "[android-su][DEBUG] $(date '+%Y-%m-%d %H:%M:%S') $*" >>"$LOG_FILE" 2>/dev/null || true
+      } &
+    fi
+  fi
+}
 
 # export path for android bins/tools
 export PATH="/data/data/com.offsec.nethunter/files/scripts:/data/data/com.offsec.nethunter/files/scripts/bin:/data/data/com.offsec.nhterm/files/home/.nhterm/script:/data/data/com.offsec.nhterm/files/usr/bin_armv7l:/data/data/com.offsec.nhterm/files/usr/sbin:/sbin:/system/bin:/system/xbin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/odm/bin:/vendor/bin:/product/bin:."
@@ -7,11 +26,107 @@ export PATH="/data/data/com.offsec.nethunter/files/scripts:/data/data/com.offsec
 unset LD_LIBRARY_PATH
 unset LD_PRELOAD
 export PS1="\[\e[1;32m\]\u [ \[\e[0m\]\w\[\e[1;32m\] ]$ \[\e[0m\]"
-# Find and remember su location
-SU1=$(which su)
-SU2="$SU1 -mm -s $@"
 
-# clear out old view
+log_debug "PATH=$PATH"
+log_debug "Original args: $*"
+
+##
+# `magisk -V` works without root and returns an integer, e.g. 28100.
+##
+MAGISK_VERSION_RAW="$(magisk -V 2>/dev/null || true)"
+log_debug "MAGISK_VERSION_RAW='$MAGISK_VERSION_RAW'"
+
+if echo "$MAGISK_VERSION_RAW" | grep -qE '^[0-9]+$'; then
+  MAGISK_VERSION="$MAGISK_VERSION_RAW"
+else
+  MAGISK_VERSION="0"
+fi
+log_debug "MAGISK_VERSION='$MAGISK_VERSION'"
+
+##
+# Find and identify su solution
+# As different solutions have and use different args :(
+##
+
+SU1=$(which su 2>/dev/null)
+if [ -z "$SU1" ]; then
+  echo "[android-su][ERROR] 'su' binary not found in PATH" >&2
+  log_debug "ERROR: 'su' binary not found in PATH"
+  exit 1
+fi
+log_debug "Using su binary at: $SU1"
+
+M_SU=("$SU1" -i -mm -s "$*")
+K_SU=("$SU1" -M -p -s "$@")
+U_SU=("$SU1" "$@")
+
+log_debug "M_SU=( ${M_SU[*]} )"
+log_debug "K_SU=( ${K_SU[*]} )"
+log_debug "U_SU=( ${U_SU[*]} )"
+
+SU_FLAVOR="unknown"
+
+# try obvious flags first
+for f in --version -v -V --help; do
+  o="$("$SU1" $f 2>/dev/null || true)"
+  [ -n "$o" ] && log_debug "Output of '$SU1 $f': $(echo "$o" | head -n1)"  # log first line only
+  case "$o" in
+    *MagiskSU* )
+      SU_FLAVOR="MagiskSU"
+      # Use different CLI forms depending on Magisk version
+      # - For version code 28100 (Magisk 28.1) we must use: su -mm -s "$@"
+      # - For versions above 28100 we must use: su -i -mm -s "$*"
+      if [ "$MAGISK_VERSION" -eq 28100 ]; then
+        SU2=("$SU1" -mm -s "$@")
+        log_debug "Detected MagiskSU v28100, using SU2=( ${SU2[*]} )"
+      elif [ "$MAGISK_VERSION" -gt 28100 ]; then
+        SU2=("$SU1" -i -mm -s "$*")
+        log_debug "Detected MagiskSU >28100 (v$MAGISK_VERSION), using SU2=( ${SU2[*]} )"
+      else
+        # Magisk older than 28.1 or magisk not installed; fall back to legacy behavior
+        SU2=("$SU1" -mm -s "$@")
+        log_debug "Detected MagiskSU with unknown/older version ($MAGISK_VERSION), using legacy SU2=( ${SU2[*]} )"
+      fi
+      ;;
+    *SuperSU*|*superuser*|*Chainfire* )
+      SU_FLAVOR="SuperSU"
+      SU2=("${U_SU[@]}")
+      log_debug "Detected SuperSU, using SU2=( ${SU2[*]} )"
+      ;;
+    *busybox* )
+      SU_FLAVOR="busybox su"
+      SU2=("${U_SU[@]}")
+      log_debug "Detected busybox su, using SU2=( ${SU2[*]} )"
+      ;;
+    *toybox* )
+      SU_FLAVOR="toybox su"
+      SU2=("${U_SU[@]}")
+      log_debug "Detected toybox su, using SU2=( ${SU2[*]} )"
+      ;;
+    *KernelSU* )
+      SU_FLAVOR="KernelSU"
+      SU2=("${K_SU[@]}")
+      log_debug "Detected KernelSU, using SU2=( ${SU2[*]} )"
+      ;;
+  esac
+  [ -n "$SU_FLAVOR" ] && [ "$SU_FLAVOR" != "unknown" ] && break
+
+done
+
+if [ -z "${SU2+x}" ]; then
+  # Fallback if we couldn't detect variant
+  SU2=("${U_SU[@]}")
+  log_debug "SU flavor detection failed, falling back to SU2=( ${SU2[*]} )"
+fi
+
+log_debug "Final SU_FLAVOR=$SU_FLAVOR"
+log_debug "Final SU2 command: ${SU2[*]}"
+
+##
+# Main job for wieners, sorry, WHINERS
+##
+
 clear
+log_debug "Executing: ${SU2[*]} /data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash"
 
-$SU2 /data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash
+"${SU2[@]}" /data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash
