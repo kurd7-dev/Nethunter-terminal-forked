@@ -58,15 +58,15 @@ before_script:
 
 
 # Rules to build automatically:
-# Debug builds in all branches except "master"
-# Release builds in the "master" branch 
+# Debug builds in all branches except "main"
+# Release builds in the "main" branch
 # Both debug and release apk can be build manually in any branch
 assembleDebugAuto:
     extends: .assembleDebug
     only:
     - branches
     except:
-    - master
+    - main
     
 assembleDebugManual:
     extends: .assembleDebug
@@ -75,7 +75,7 @@ assembleDebugManual:
 assembleReleaseAuto:
     extends: .assembleRelease
     only:
-    - master
+    - main
     
 assembleReleaseManual:
     extends: .assembleRelease
