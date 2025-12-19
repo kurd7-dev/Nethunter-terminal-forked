@@ -1,14 +1,87 @@
 #!/data/data/com.offsec.nhterm/files/usr/bin_aarch64/bash
-# Version: 1.0.2
+# Version: 1.0.8
 
 # export path for android bins/tools
 export PATH=/data/data/com.offsec.nhterm/files/home/.nhterm/script:/data/data/com.offsec.nhterm/files/usr/bin_aarch64:/data/data/com.offsec.nhterm/files/usr/sbin:/sbin:/system/bin:/system/xbin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/odm/bin:/vendor/bin:/product/bin:.
 
-SU1=$(which su)
-SU2="$SU1 -c $@"
+##
+# `magisk -V` works without root and returns an integer, e.g. 28100.
+##
+MAGISK_VERSION_RAW="$(magisk -V 2>/dev/null || true)"
+
+if echo "$MAGISK_VERSION_RAW" | grep -qE '^[0-9]+$'; then
+  MAGISK_VERSION="$MAGISK_VERSION_RAW"
+else
+  MAGISK_VERSION="0"
+fi
+
+##
+# Find and identify su solution
+# As different solutions have and use different args :(
+##
+
+SU1=$(which su 2>/dev/null)
+if [ -z "$SU1" ]; then
+  echo "[android-su][ERROR] 'su' binary not found in PATH" >&2
+  exit 1
+fi
+
+M_SU="$SU1 -i -mm -c $*"
+K_SU="$SU1 -M -p -c $*"
+U_SU="$SU1 $*"
+
+SU_FLAVOR="unknown"
+
+# try obvious flags first
+for f in --version -v -V --help; do
+  o="$("$SU1" $f 2>/dev/null || true)"
+  case "$o" in
+    *MagiskSU* )
+      SU_FLAVOR="MagiskSU"
+      # Use different CLI forms depending on Magisk version
+      # - For version code 28100 (Magisk 28.1) we must use: su -mm -s "$@"
+      # - For versions above 28100 we must use: su -i -mm -s "$*"
+      if [ "$MAGISK_VERSION" -eq 28100 ]; then
+        SU2="$SU1 -mm -c $*"
+      elif [ "$MAGISK_VERSION" -gt 28100 ]; then
+        SU2="$SU1 -i -mm -c $*"
+      else
+        # Magisk older than 28.1 or magisk not installed; fall back to legacy behavior
+        SU2="$SU1 -mm -c $*"
+      fi
+      ;;
+    *SuperSU*|*superuser*|*Chainfire* )
+      SU_FLAVOR="SuperSU"
+      SU2=("${U_SU[@]}")
+      ;;
+    *busybox* )
+      SU_FLAVOR="busybox su"
+      SU2=("${U_SU[@]}")
+      ;;
+    *toybox* )
+      SU_FLAVOR="toybox su"
+      SU2=("${U_SU[@]}")
+      ;;
+    *KernelSU* )
+      SU_FLAVOR="KernelSU"
+      SU2=("${K_SU[@]}")
+      ;;
+  esac
+  [ -n "$SU_FLAVOR" ] && [ "$SU_FLAVOR" != "unknown" ] && break
+
+done
+
+if [ -z "${SU2+x}" ]; then
+  # Fallback if we couldn't detect variant
+  SU2=("${U_SU[@]}")
+fi
+
+##
+# Finally do the main script job
+##
 
 # clear out old view
-clear
+#clear
 
 # unset things and readd chroot things
 unset PATH
@@ -32,5 +105,4 @@ export SHLVL=1
 # Lets pass a binky export here too ;)
 export YOU_KNOW_WHAT=THIS_IS_KALI_LINUX_NETHUNTER_FROM_JAVA_BINKY
 
-$SU2 /system/bin/chroot /data/local/nhsystem/kalifs su
-
+$SU2 /system/bin/chroot /data/local/nhsystem/kalifs /bin/su
