@@ -2,7 +2,7 @@
 # Version: 1.0.8
 
 # export path for android bins/tools
-export PATH=/data/data/com.offsec.nhterm/files/home/.nhterm/script:/data/data/com.offsec.nhterm/files/usr/bin_armv7l:/data/data/com.offsec.nhterm/files/usr/sbin:/sbin:/system/bin:/system/xbin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/odm/bin:/vendor/bin:/product/bin:.
+export PATH=/data/data/com.offsec.nhterm/files/home/.nhterm/script:/data/data/com.offsec.nhterm/files/usr/bin_armv7l:/data/data/com.offsec.nhterm/files/usr/sbin:/sbin:/system/bin:/system/xbin:/system_ext/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/odm/bin:/vendor/bin:/product/bin:.
 
 ##
 # `magisk -V` works without root and returns an integer, e.g. 28100.
