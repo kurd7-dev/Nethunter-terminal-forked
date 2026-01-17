@@ -13,7 +13,7 @@ buildscript {
   ext {
     //noinspection HighAppVersionCode
     //version=YYYYMMVVRR (Either "VV" for stable version OR "RR" for pre-release candidate (e.g. 0001 for rc1))
-    versionCode=2026010100   // 2026-01(Jan).01
+    versionCode=2026010200   // 2026-01(Jan).02
     versionName="2025.4"
   }
 
