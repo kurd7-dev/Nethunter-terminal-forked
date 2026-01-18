@@ -129,4 +129,4 @@ log_debug "Final SU2 command: ${SU2[*]}"
 clear
 log_debug "Executing: ${SU2[*]} /data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash"
 
-"${SU2[@]}" /data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash
+"${SU2[@]}" "/data/data/com.offsec.nhterm/files/usr/bin_armv7l/bash"
