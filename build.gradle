@@ -28,22 +28,17 @@ buildscript {
   ]
 
   repositories {
-    maven { url "https://maven.fabric.io/public" }
+    google()         // <-- Checked 1st (Official Android Tools)
+    mavenCentral()   // <-- Checked 2nd (Official Java Libraries)
     maven { url 'https://plugins.gradle.org/m2/' }
     maven { url 'https://jitpack.io' }
-    maven { url 'https://artifactory.appodeal.com/appodeal-public/' }
-    maven { url 'https://dl.google.com/dl/android/maven2/' }
-    mavenCentral()
-    google()
+    // Dead Appodeal and Fabric links removed!
   }
 
-  dependencies {
+    dependencies {
     classpath 'com.android.tools.build:gradle:8.9.2'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     classpath rootProject.ext.deps["kotlin-gradle-plugin"]
-
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
-    classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files

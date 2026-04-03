@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
   compileSdk rootProject.ext.android.COMPILE_SDK_VERSION
+  ndkVersion "28.2.13676358"
 
   defaultConfig {
     applicationId "com.offsec.nhterm"
