@@ -9,6 +9,12 @@
     app:showAsAction="ifRoom"/>
 
   <item
+    android:id="@+id/menu_item_switch_account"
+    android:icon="@drawable/ic_person"
+    android:title="@string/switch_account"
+    app:showAsAction="ifRoom"/>
+
+  <item
     android:id="@+id/menu_item_new_session"
     android:title="@string/new_session"
     app:showAsAction="never"/>

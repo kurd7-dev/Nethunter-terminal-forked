@@ -5,19 +5,28 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.drawable.Drawable
 import android.os.*
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.offsec.nhterm.App
 import com.offsec.nhterm.R
 import com.offsec.nhterm.backend.TerminalSession
@@ -35,13 +44,18 @@ import com.offsec.nhterm.ui.settings.SettingActivity
 import com.offsec.nhterm.utils.FullScreenHelper
 import com.offsec.nhterm.utils.NeoPermission
 import com.offsec.nhterm.utils.RangedInt
+import com.topjohnwu.superuser.Shell
 import de.mrapp.android.tabswitcher.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
+import java.util.Base64
 
 
 class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreferences.OnSharedPreferenceChangeListener {
+  private data class KaliUser(val username: String, val isRoot: Boolean)
+
   companion object {
     const val KEY_NO_RESTORE = "no_restore"
     const val REQUEST_SETUP = 22313
@@ -168,6 +182,10 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
       }
       R.id.menu_item_new_session -> {
         addNewNetHunterSession("Kali Shell")
+        true
+      }
+      R.id.menu_item_switch_account -> {
+        showSwitchAccountDialog()
         true
       }
       R.id.menu_item_new_emergency_session -> {
@@ -566,22 +584,207 @@ class NeoTermActivity : AppCompatActivity(), ServiceConnection, SharedPreference
   }
 
   private fun addNewNetHunterSession(sessionName: String?) {
+    requireKaliLogin { loginUser ->
+      launchNetHunterSession(sessionName, loginUser)
+    }
+  }
+
+  private fun launchNetHunterSession(sessionName: String?, loginUser: String) {
     val sysarch = System.getProperty("os.arch")
     val sessionCallback = TermSessionCallback()
     val viewClient = TermViewClient(this)
+    val executablePath = "/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/kali"
 
     val parameter = ShellParameter()
       .callback(sessionCallback)
-      .executablePath("/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/kali")
+      .executablePath(executablePath)
+      .arguments(arrayOf(executablePath, loginUser))
     val session = termService!!.createTermSession(parameter)
 
-    session.mSessionName = sessionName ?: generateSessionName("Kali Shell")
+    session.mSessionName = sessionName ?: generateSessionName("Kali Shell [$loginUser]")
 
     val tab = createTab(session.mSessionName) as TermTab
     tab.termData.initializeSessionWith(session, sessionCallback, viewClient)
 
     addNewTab(tab, createRevealAnimation())
     switchToSession(tab)
+  }
+
+  private fun showSwitchAccountDialog() {
+    requireKaliLogin { loginUser ->
+      Toast.makeText(this, "Selected user: $loginUser", Toast.LENGTH_SHORT).show()
+    }
+  }
+
+  private fun requireKaliLogin(onAuthenticated: (String) -> Unit) {
+    val dialogView = layoutInflater.inflate(R.layout.dialog_kali_login, null)
+    val messageView = dialogView.findViewById<TextView>(R.id.kali_login_message)
+    val userList = dialogView.findViewById<LinearLayout>(R.id.kali_user_list)
+    val createUserButton = dialogView.findViewById<MaterialButton>(R.id.kali_create_user_button)
+    val usernameLayout = dialogView.findViewById<TextInputLayout>(R.id.kali_manual_username_layout)
+    val passwordLayout = dialogView.findViewById<TextInputLayout>(R.id.kali_login_password_layout)
+    val usernameInput = dialogView.findViewById<TextInputEditText>(R.id.kali_manual_username)
+    val passwordInput = dialogView.findViewById<TextInputEditText>(R.id.kali_login_password)
+    val users = detectKaliUsers()
+    var selectedUser: String? = null
+    val defaultColor = ContextCompat.getColor(this, R.color.colorAccent)
+    val rootColor = ContextCompat.getColor(this, android.R.color.holo_red_dark)
+    val selectedTint = ContextCompat.getColor(this, android.R.color.white)
+
+    messageView.setText(R.string.kali_login_message)
+
+    fun setPasswordVisible(visible: Boolean) {
+      passwordLayout.visibility = if (visible) View.VISIBLE else View.GONE
+      if (visible) {
+        passwordInput.requestFocus()
+      }
+    }
+
+    fun renderUsers(selected: String?) {
+      userList.removeAllViews()
+      users.forEach { user ->
+        val itemView = layoutInflater.inflate(R.layout.item_kali_user, userList, false)
+        val avatarView = itemView.findViewById<ImageView>(R.id.kali_user_avatar)
+        val nameView = itemView.findViewById<TextView>(R.id.kali_user_name)
+        avatarView.setImageDrawable(createUserAvatar(user, user.username == selected, defaultColor, rootColor, selectedTint))
+        nameView.text = user.username
+        itemView.setOnClickListener {
+          selectedUser = user.username
+          usernameInput.setText(user.username)
+          usernameLayout.visibility = View.GONE
+          messageView.setText(R.string.kali_login_message)
+          setPasswordVisible(true)
+          renderUsers(selectedUser)
+        }
+        userList.addView(itemView)
+      }
+    }
+
+    renderUsers(null)
+
+    val dialog = MaterialAlertDialogBuilder(this, R.style.DialogStyle)
+      .setTitle(R.string.kali_login_title)
+      .setView(dialogView)
+      .setNegativeButton(android.R.string.cancel, null)
+      .setPositiveButton(R.string.kali_login_action, null)
+      .create()
+
+    dialog.setOnShowListener {
+      createUserButton.setOnClickListener {
+        selectedUser = null
+        usernameInput.text = null
+        usernameLayout.visibility = View.VISIBLE
+        messageView.setText(R.string.kali_auth_other_user_message)
+        setPasswordVisible(true)
+        renderUsers(null)
+        usernameInput.requestFocus()
+      }
+
+      dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
+        dialog.dismiss()
+        Toast.makeText(this, R.string.kali_auth_cancelled, Toast.LENGTH_SHORT).show()
+      }
+
+      dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+        usernameLayout.error = null
+        passwordLayout.error = null
+
+        val username = (selectedUser ?: usernameInput.text?.toString())
+          ?.trim()
+          .orEmpty()
+        val password = passwordInput.text?.toString().orEmpty()
+
+        var hasError = false
+
+        if (username.isEmpty()) {
+          if (usernameLayout.visibility == View.VISIBLE) {
+            usernameLayout.error = getString(R.string.kali_auth_username_required)
+          } else {
+            Toast.makeText(this, R.string.kali_auth_select_user, Toast.LENGTH_SHORT).show()
+          }
+          hasError = true
+        }
+
+        if (password.isEmpty()) {
+          passwordLayout.error = getString(R.string.kali_auth_password_required)
+          hasError = true
+        }
+
+        if (hasError) {
+          return@setOnClickListener
+        }
+
+        verifyKaliPassword(username, password) { verified ->
+          if (!verified) {
+            passwordLayout.error = getString(R.string.kali_auth_invalid_credentials)
+            return@verifyKaliPassword
+          }
+          dialog.dismiss()
+          onAuthenticated(username)
+        }
+      }
+    }
+
+    dialog.show()
+  }
+
+  private fun detectKaliUsers(): List<KaliUser> {
+    val passwdFile = File("/data/local/nhsystem/kalifs/etc/passwd")
+    if (!passwdFile.exists()) {
+      return listOf(KaliUser("root", true))
+    }
+
+    return passwdFile.readLines()
+      .mapNotNull { line ->
+        val parts = line.split(':')
+        if (parts.size < 7) return@mapNotNull null
+        val username = parts[0].trim()
+        val uid = parts[2].toIntOrNull() ?: return@mapNotNull null
+        val shell = parts[6].trim()
+        val isValidShell = shell.isNotEmpty() && !shell.contains("nologin") && !shell.endsWith("false")
+        val shouldInclude = username == "root" || (uid >= 1000 && isValidShell)
+        if (!shouldInclude || username.isEmpty()) return@mapNotNull null
+        KaliUser(username, username == "root")
+      }
+      .distinctBy { it.username }
+      .ifEmpty { listOf(KaliUser("root", true)) }
+  }
+
+  private fun createUserAvatar(
+    user: KaliUser,
+    isSelected: Boolean,
+    defaultColor: Int,
+    rootColor: Int,
+    selectedTint: Int,
+  ): Drawable {
+    val drawable = DrawableCompat.wrap(
+      ContextCompat.getDrawable(this, R.drawable.ic_kali_logo)!!.mutate()
+    )
+    val tint = when {
+      user.isRoot -> rootColor
+      isSelected -> selectedTint
+      else -> defaultColor
+    }
+    DrawableCompat.setTint(drawable, tint)
+    return drawable
+  }
+
+  private fun verifyKaliPassword(username: String, password: String, onResult: (Boolean) -> Unit) {
+    Thread {
+      val sysarch = System.getProperty("os.arch")
+      val kaliScript = "/data/data/com.offsec.nhterm/files/usr/bin_$sysarch/kali"
+      val encodedUser = Base64.getEncoder().encodeToString(username.toByteArray(Charsets.UTF_8))
+      val encodedPassword = Base64.getEncoder().encodeToString(password.toByteArray(Charsets.UTF_8))
+      val command =
+        "KALI_VERIFY_USER_B64='$encodedUser' " +
+          "KALI_VERIFY_PASSWORD_B64='$encodedPassword' " +
+          "KALI_VERIFY_USER='${username.replace("'", "'\\''")}' " +
+          "$kaliScript --auth-check"
+      val result = Shell.cmd(command).exec().isSuccess
+      runOnUiThread {
+        onResult(result)
+      }
+    }.start()
   }
 
   @SuppressLint("SdCardPath")

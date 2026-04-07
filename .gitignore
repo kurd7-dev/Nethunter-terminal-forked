@@ -24,6 +24,7 @@ local.properties
 proguard/
 
 # Intellij project files
+.acside/
 *.iml
 *.ipr
 *.iws

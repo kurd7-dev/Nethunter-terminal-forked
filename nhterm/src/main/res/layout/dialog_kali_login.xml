@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="wrap_content"
+     android:layout_width="match_parent"
+     android:orientation="vertical"
+     android:paddingTop="8dp">
+
+    <ImageView
+         android:layout_height="72dp"
+         android:layout_width="72dp"
+         android:contentDescription="@string/kali_login_logo_description"
+         app:srcCompat="@drawable/ic_kali_logo"
+         android:id="@+id/kali_login_logo"
+         android:layout_gravity="center_horizontal" />
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:gravity="center"
+         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+         android:layout_marginTop="12dp"
+         android:id="@+id/kali_login_message"
+         android:text="@string/kali_login_message" />
+
+    <com.google.android.material.button.MaterialButton
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         style="@style/Widget.Material3.Button.OutlinedButton"
+         android:layout_marginTop="14dp"
+         android:layout_gravity="center_horizontal"
+         android:id="@+id/kali_create_user_button"
+         android:text="@string/kali_create_user_button" />
+
+    <HorizontalScrollView
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:scrollbars="none"
+         android:layout_marginTop="16dp">
+
+        <LinearLayout
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:orientation="horizontal"
+             android:id="@+id/kali_user_list">
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <com.google.android.material.textfield.TextInputLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:visibility="gone"
+         android:hint="@string/kali_login_username"
+         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+         android:layout_marginTop="12dp"
+         android:layout_gravity="center_horizontal"
+         android:id="@+id/kali_manual_username_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:maxLines="1"
+             android:inputType="textPersonName"
+             android:id="@+id/kali_manual_username" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:visibility="gone"
+         app:endIconMode="password_toggle"
+         android:hint="@string/kali_login_password"
+         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+         android:layout_marginTop="12dp"
+         android:layout_gravity="center_horizontal"
+         android:id="@+id/kali_login_password_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:maxLines="1"
+             android:inputType="textPassword"
+             android:id="@+id/kali_login_password" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

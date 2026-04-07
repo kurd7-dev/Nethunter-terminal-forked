@@ -8,6 +8,7 @@
   <string name="toggle_tab_switcher_menu_item">Toggle Tabs</string>
   <string name="new_session">New Session</string>
   <string name="new_session_more">New Session…</string>
+  <string name="new_nethunter_session">New Kali Shell</string>
   <string name="new_emergency_session">New Emergency Shell</string>
   <string name="new_bash_session">New Bash Shell</string>
   <string name="new_root_session">New Root Shell</string>
@@ -186,6 +187,20 @@
   </string>
   <string name="dangerous_zone">Danger Zone</string>
   <string name="reset_app_warning">This will delete and re-copy required files to boot kali chroot, confirm?</string>
+  <string name="kali_login_title">Kali Login Required</string>
+  <string name="kali_login_message">Choose a Kali user before launching the chroot session.</string>
+  <string name="kali_login_logo_description">Kali dragon logo</string>
+  <string name="kali_login_username">Username</string>
+  <string name="kali_login_password">Password</string>
+  <string name="kali_login_action">Login</string>
+  <string name="switch_account">Switch Account</string>
+  <string name="kali_create_user_button">Create New User</string>
+  <string name="kali_auth_cancelled">Kali login cancelled.</string>
+  <string name="kali_auth_select_user">Select a Kali user first.</string>
+  <string name="kali_auth_username_required">Username is required.</string>
+  <string name="kali_auth_password_required">Password is required.</string>
+  <string name="kali_auth_other_user_message">Enter another Kali username.</string>
+  <string name="kali_auth_invalid_credentials">Wrong Kali password.</string>
 
   <string name="default_source_url" translatable="false">http://http.kali.org/kali</string>
 

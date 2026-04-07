@@ -1,6 +1,20 @@
 #!/data/data/com.offsec.nhterm/files/usr/bin_aarch64/bash
 # Version: 1.0.8
 
+MODE="${1:-session}"
+
+if [ "$MODE" = "--auth-check" ]; then
+  TARGET_USER="${KALI_VERIFY_USER:-root}"
+else
+  TARGET_USER="${1:-root}"
+fi
+
+case "$TARGET_USER" in
+  ""|*[!A-Za-z0-9._-]*)
+    TARGET_USER="root"
+    ;;
+esac
+
 # export path for android bins/tools
 export PATH=/data/data/com.offsec.nhterm/files/home/.nhterm/script:/data/data/com.offsec.nhterm/files/usr/bin_aarch64:/data/data/com.offsec.nhterm/files/usr/sbin:/sbin:/system/bin:/system/xbin:/system_ext/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/odm/bin:/vendor/bin:/product/bin:.
 
@@ -26,10 +40,6 @@ if [ -z "$SU1" ]; then
   exit 1
 fi
 
-M_SU="$SU1 -i -mm -c $*"
-K_SU="$SU1 -M -p -c $*"
-U_SU="$SU1 $*"
-
 SU_FLAVOR="unknown"
 
 # try obvious flags first
@@ -42,29 +52,29 @@ for f in --version -v -V --help; do
       # - For version code 28100 (Magisk 28.1) we must use: su -mm -s "$@"
       # - For versions above 28100 we must use: su -i -mm -s "$*"
       if [ "$MAGISK_VERSION" -eq 28100 ]; then
-        SU2="$SU1 -mm -c $*"
+        SU2="$SU1 -mm -c"
       elif [ "$MAGISK_VERSION" -gt 28100 ]; then
-        SU2="$SU1 -i -mm -c $*"
+        SU2="$SU1 -i -mm -c"
       else
         # Magisk older than 28.1 or magisk not installed; fall back to legacy behavior
-        SU2="$SU1 -mm -c $*"
+        SU2="$SU1 -mm -c"
       fi
       ;;
     *SuperSU*|*superuser*|*Chainfire* )
       SU_FLAVOR="SuperSU"
-      SU2=("${U_SU[@]}")
+      SU2="$SU1 -c"
       ;;
     *busybox* )
       SU_FLAVOR="busybox su"
-      SU2=("${U_SU[@]}")
+      SU2="$SU1 -c"
       ;;
     *toybox* )
       SU_FLAVOR="toybox su"
-      SU2=("${U_SU[@]}")
+      SU2="$SU1 -c"
       ;;
     *KernelSU* )
       SU_FLAVOR="KernelSU"
-      SU2=("${K_SU[@]}")
+      SU2="$SU1 -M -p -c"
       ;;
   esac
   [ -n "$SU_FLAVOR" ] && [ "$SU_FLAVOR" != "unknown" ] && break
@@ -73,7 +83,7 @@ done
 
 if [ -z "${SU2+x}" ]; then
   # Fallback if we couldn't detect variant
-  SU2=("${U_SU[@]}")
+  SU2="$SU1 -c"
 fi
 
 ##
@@ -98,11 +108,21 @@ export LANG=en_US.UTF-8
 export HOME=/root
 export TMP=/tmp
 export TMPDIR=/tmp
-export USER=root
-export MAIL=/var/mail/root
-export LOGNAME=root
+export USER=$TARGET_USER
+export MAIL=/var/mail/$TARGET_USER
+export LOGNAME=$TARGET_USER
 export SHLVL=1
 # Lets pass a binky export here too ;)
 export YOU_KNOW_WHAT=THIS_IS_KALI_LINUX_NETHUNTER_FROM_JAVA_BINKY
 
-$SU2 "/system/bin/chroot /data/local/nhsystem/kalifs /bin/su"
+if [ "$TARGET_USER" = "root" ]; then
+  CHROOT_CMD="/system/bin/chroot /data/local/nhsystem/kalifs /bin/su"
+else
+  CHROOT_CMD="/system/bin/chroot /data/local/nhsystem/kalifs /bin/su - $TARGET_USER"
+fi
+
+if [ "$MODE" = "--auth-check" ]; then
+  CHROOT_CMD="/system/bin/chroot /data/local/nhsystem/kalifs /usr/bin/python3 -c \"import base64,crypt,spwd,sys;u=base64.b64decode('$KALI_VERIFY_USER_B64').decode();p=base64.b64decode('$KALI_VERIFY_PASSWORD_B64').decode();e=spwd.getspnam(u).sp_pwdp;sys.exit(0 if e and e not in ('!', '*', 'x') and crypt.crypt(p, e)==e else 1)\""
+fi
+
+$SU2 "$CHROOT_CMD"
